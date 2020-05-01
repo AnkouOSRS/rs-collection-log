@@ -746,7 +746,6 @@ export class DefaultCategories {
       },
       {
         "id": 4726,
-        
         "name": "Guthan's warspear",
         "unlocked": false
       },
@@ -1259,116 +1258,68 @@ export class DefaultCategories {
 
   public static readonly SKILLING: Category = {
     "name": "Skilling",
-    locked: true,
-    "items": [{
-      "id": 11850,
-      "name": "Graceful hood",
-      "unlocked": false
-    }, {
-      "id": 11858,
-      "name": "Graceful gloves",
-      "unlocked": false
-    }, {
-      "id": 5554,
-      "name": "Rogue mask",
-      "unlocked": false
-    }, {
+    "items": [{"id": 11850, "name": "Graceful hood", "unlocked": false}, {
       "id": 11854,
       "name": "Graceful top",
       "unlocked": false
-    }, {
-      "id": 11852,
-      "name": "Graceful cape",
-      "unlocked": false
-    }, {
-      "id": 5553,
-      "name": "Rogue top",
-      "unlocked": false
-    }, {
-      "id": 11856,
-      "name": "Graceful legs",
-      "unlocked": false
-    }, {
-      "id": 10941,
-      "name": "Lumberjack hat",
-      "unlocked": false
-    }, {
-      "id": 5555,
-      "name": "Rogue trousers",
-      "unlocked": false
-    }, {
+    }, {"id": 11856, "name": "Graceful legs", "unlocked": false}, {
       "id": 11860,
       "name": "Graceful boots",
       "unlocked": false
-    }, {
-      "id": 10939,
-      "name": "Lumberjack top",
+    }, {"id": 11858, "name": "Graceful gloves", "unlocked": false}, {
+      "id": 11852,
+      "name": "Graceful cape",
       "unlocked": false
-    }, {
+    }, {"id": 5554, "name": "Rogue mask", "unlocked": false}, {
+      "id": 5553,
+      "name": "Rogue top",
+      "unlocked": false
+    }, {"id": 5555, "name": "Rogue trousers", "unlocked": false}, {
       "id": 5557,
       "name": "Rogue boots",
       "unlocked": false
-    }, {
-      "id": 13258,
-      "name": "Angler hat",
+    }, {"id": 5556, "name": "Rogue gloves", "unlocked": false}, {
+      "id": 10941,
+      "name": "Lumberjack hat",
       "unlocked": false
-    }, {
+    }, {"id": 10939, "name": "Lumberjack top", "unlocked": false}, {
       "id": 10940,
       "name": "Lumberjack legs",
       "unlocked": false
-    }, {
-      "id": 5556,
-      "name": "Rogue gloves",
+    }, {"id": 10933, "name": "Lumberjack boots", "unlocked": false}, {
+      "id": 13258,
+      "name": "Angler hat",
       "unlocked": false
-    }, {
-      "id": 13259,
-      "name": "Angler top",
-      "unlocked": false
-    }, {
-      "id": 10933,
-      "name": "Lumberjack boots",
-      "unlocked": false
-    }, {
-      "id": 20708,
-      "name": "Pyromancer hood",
-      "unlocked": false
-    }, {
+    }, {"id": 13259, "name": "Angler top", "unlocked": false}, {
       "id": 13260,
       "name": "Angler waders",
       "unlocked": false
-    }, {
-      "id": 12013,
-      "name": "Prospector helmet",
+    }, {"id": 13261, "name": "Angler boots", "unlocked": false}, {
+      "id": 20708,
+      "name": "Pyromancer hood",
       "unlocked": false
-    }, {
-      "id": 20704,
-      "name": "Pyromancer garb",
-      "unlocked": false
-    }, {
-      "id": 13261,
-      "name": "Angler boots",
-      "unlocked": false
-    }, {
-      "id": 12014,
-      "name": "Prospector jacket",
-      "unlocked": false
-    }, {
+    }, {"id": 20704, "name": "Pyromancer garb", "unlocked": false}, {
       "id": 20706,
       "name": "Pyromancer robe",
       "unlocked": false
-    }, {
-      "id": 12016,
-      "name": "Prospector boots",
+    }, {"id": 20710, "name": "Pyromancer boots", "unlocked": false}, {
+      "id": 12013,
+      "name": "Prospector helmet",
       "unlocked": false
-    }, {
+    }, {"id": 12014, "name": "Prospector jacket", "unlocked": false}, {
       "id": 12015,
       "name": "Prospector legs",
       "unlocked": false
-    }, {
-      "id": 20710,
-      "name": "Pyromancer boots",
+    }, {"id": 12016, "name": "Prospector boots", "unlocked": false}, {
+      "id": 13646,
+      "name": "Farmer's strawhat",
       "unlocked": false
-    }],
+    }, {"id": 13642, "name": "Farmer's jacket", "unlocked": false}, {
+      "id": 13640,
+      "name": "Farmer's boro trousers",
+      "unlocked": false
+    }, {"id": 13644, "name": "Farmer's boots", "unlocked": false}],
+    "locked": false
   };
 
   public static readonly SLAYER_HELMS: Category = {

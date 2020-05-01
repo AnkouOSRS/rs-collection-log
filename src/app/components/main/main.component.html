@@ -68,7 +68,7 @@
     <span *ngFor="let category of categories; index as i;">
       <div class="card card-category"
            [ngStyle]="{'background-color': styleService.appliedStyles.cardColor,
-           'border': (styleService.appliedStyles.cardBorderWidth + 'px solid ' + styleService.appliedStyles.cardBorderColor), 'margin': styleService.cardMargin + 'px'}">
+           'border': (styleService.appliedStyles.cardBorderWidth + 'px solid ' + styleService.appliedStyles.cardBorderColor), 'margin': styleService.appliedStyles.cardMargin + 'px'}">
     <div class="card-header text-center category-header"
          [ngStyle]="{'background-color': styleService.appliedStyles.cardHeaderColor,
          'border-bottom': (styleService.appliedStyles.cardBorderWidth + 'px solid ' + styleService.appliedStyles.cardBorderColor)}">
@@ -509,7 +509,7 @@
           <span *ngFor="let item of editingItems; index as i;">
             <div class="row" *ngIf="item.unlocked && item.id != null">
               <div class="col-xs-6">
-                <img [src]="'data:image/png;base64,' + item.icon" [title]="item.name">
+                <img [src]="'https://www.osrsbox.com/osrsbox-db/items-icons/' + item.id + '.png'" [title]="item.name">
                 <label>{{item.name}}</label>
               </div>
               <div class="col-3">
