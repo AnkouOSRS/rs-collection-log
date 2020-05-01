@@ -38,6 +38,9 @@ export class MainComponent implements OnInit {
   addCategorySelectedTab = 0; // 0 - new, 1 - default
   categoryImportInput = '';
 
+  isAddCollapsed = true;
+  isItemSearchCollapsed = true;
+
   swappingIndex: number;
   swappingCategory: Category;
   deletingItem: Item;

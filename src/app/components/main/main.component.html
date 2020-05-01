@@ -31,7 +31,7 @@
              (keyup)="saveTitle()">
     </span>
   </div>
-  <div data-html2canvas-ignore class="collapse" id="itemSearchCollapse">
+  <div data-html2canvas-ignore class="collapse" id="itemSearchCollapse" [ngbCollapse]="isItemSearchCollapsed">
     <form class="item-search-form">
       <mat-form-field>
         <mat-label>Category</mat-label>
@@ -47,9 +47,8 @@
         <mat-label>Item name</mat-label>
         <input matInput [(ngModel)]="query" (keyup)="findItemByName()" name="query">
       </mat-form-field>
-      <button mat-mini-fab color="warn" aria-label="hide search results" data-toggle="collapse"
-              data-target="#itemSearchCollapse"
-              aria-expanded="true" aria-controls="itemSearchCollapse">
+      <button mat-mini-fab color="warn" aria-label="hide search results" (click)="isItemSearchCollapsed = !isItemSearchCollapsed"
+              [attr.aria-expanded]="!isItemSearchCollapsed" aria-controls="itemSearchCollapse">
         <span class="material-icons">visibility_off</span>
       </button>
     </form>
@@ -66,7 +65,6 @@
     </div>
   </div>
 
-<!--  right - 50 left 30-->
   <div class="container-fluid text-center card-columns" style="margin-bottom: 100px; padding-right: 40px;">
     <span *ngFor="let category of categories; index as i;">
       <div class="card card-category"
@@ -76,9 +74,9 @@
          [ngStyle]="{'background-color': styleService.cardHeaderColor,
          'border-bottom': (styleService.cardBorderWidth + 'px solid ' + styleService.cardBorderColor)}">
       <div class="edit-category-btn-wrapper">
-        <span data-html2canvas-ignore class="edit-btn material-icons edit-category-btn" (click)="toggleEditingCategory(category)"
-              [ngStyle]="{color: (this.editingCategories.includes(category) ? 'white' : '')}"
-              data-toggle="collapse" [attr.data-target]="'.' + category.name.replace(' ','') + i + 'Collapse'">
+        <span data-html2canvas-ignore class="edit-btn material-icons edit-category-btn" (click)="toggleEditingCategory(category);"
+              [attr.aria-expanded]="editingCategories.includes(category)" [attr.aria-controls]="category.name.replace(' ','') + i + 'Collapse'"
+              [ngStyle]="{color: (this.editingCategories.includes(category) ? 'white' : '')}">
           edit
         </span>
       </div>
@@ -97,22 +95,11 @@
 
 
 <div data-html2canvas-ignore class="collapse" style="margin-top: 5px;"
-     [ngClass]="category.name.replace(' ','') + i + 'Collapse'">
+     [id]="category.name.replace(' ','') + i + 'Collapse'" [ngbCollapse]="!editingCategories.includes(category)">
   <div class="card card-body edit-card">
     <div class="container-fluid" style="padding: 0; overflow: hidden">
         <div class="row" style="margin: 0">
-<!--        <div class="col" style="padding: 0;">-->
-<!--          <label style="margin-right: 5px">Width:</label>-->
-<!--          <input type="number" class="dimension-control"-->
-<!--                 [ngStyle]="{width: getDimensionControlWidth(category.x) + 'ch'}"-->
-<!--                 [(ngModel)]="category.x" (ngModelChange)="saveCategories()" min="1" max="99">-->
-<!--          <span class="material-icons edit-btn" title="Remove width" style="color: red;" *ngIf="category.x != null"-->
-<!--                (click)="category.x = null; saveCategories();">-->
-<!--            clear-->
-<!--          </span>-->
-<!--        </div>-->
           <div class="col" style="padding: 0;">
-<!--          <label style="margin-right: 5px">KC:</label>-->
             <mat-form-field>
               <mat-label>KC</mat-label>
               <input matInput type="number" class="dimension-control"
@@ -153,8 +140,6 @@
                         value="{{getCategoryProgressPercent(category)}}"
                         *ngIf="styleService.showProgressBar"></mat-progress-bar>
     </div>
-
-<!--        [src]="'data:image/png;base64,' + item.icon"-->
     <div class="container card-body text-center">
       <span class="item-span" *ngFor="let item of category.items; index as index;">
         <img class="diary-item" *ngIf="item.id != null"
@@ -195,19 +180,21 @@
   </span>
   </div>
 
-  <div data-html2canvas-ignore class="collapse" id="addCollapse" style="z-index: 99999 !important">
+  <div data-html2canvas-ignore class="collapse" id="addCollapse" style="z-index: 99999 !important" [ngbCollapse]="isAddCollapsed">
     <div class="card card-body add-item-category-collapse">
-      <button mat-raised-button color="accent" data-toggle="collapse" data-target="#itemSearchCollapse"
-              aria-expanded="false" aria-controls="itemSearchCollapse" (click)="scrollToTop()">
+        <button mat-raised-button color="accent" (click)="isItemSearchCollapsed = !isItemSearchCollapsed; scrollToTop();"
+                [attr.aria-expanded]="!isAddCollapsed" aria-controls="itemSearchCollapse">
         Item
       </button>
-      <button mat-raised-button color="accent" data-toggle="modal" data-target="#addCategoryModal">Category</button>
+      <button mat-raised-button color="accent" data-toggle="modal" data-target="#addCategoryModal">
+        Category
+      </button>
     </div>
   </div>
 
-  <button mat-fab color="primary" class="add-category-btn" data-html2canvas-ignore data-toggle="collapse"
-          data-target="#addCollapse"
-          aria-expanded="false" aria-controls="addCollapse">
+  <button mat-fab color="primary" class="add-category-btn" data-html2canvas-ignore
+          (click)="isAddCollapsed = !isAddCollapsed"
+          [attr.aria-expanded]="!isAddCollapsed" aria-controls="addCollapse">
     <span class="material-icons">add</span>
   </button>
 
