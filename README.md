@@ -2,6 +2,13 @@
 
 This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 8.3.21.
 
+## Note
+
+If you would like to run this app locally, you will need to create a "config.ts" file and put it in the "app" folder which is inside the "src" folder. This contains an API key for Google Fonts, which is needed for the font picker in Style Settings. The contents of this file are as follows: 
+`export const DEFAULT_FONT_PICKER_CONFIG = {
+   apiKey: 'YOUR_API_KEY_HERE'
+ };`
+
 ## Development server
 
 Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The app will automatically reload if you change any of the source files.

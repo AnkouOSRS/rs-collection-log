@@ -1,0 +1,571 @@
+<div class="container-fluid main-container" [ngStyle]="styleService.getBgStyle()">
+
+  <div class="qp-div" [ngClass]="(qp == null || qp == '' || qp == '0' ? 'ss-hide' : '')" *ngIf="styleService.showQp" [ngStyle]="{top: (65 - (styleService.qpIconSize - 50)) + 'px'}">
+    <img [src]="'assets/qp.png'" [ngStyle]="{width: styleService.qpIconSize + 'px'}">
+    <mat-form-field appearance="none">
+      <mat-label>Quest Points</mat-label>
+      <input matInput type="number" class="qp-input" [min]="0" [max]="275" [ngStyle]="{width: '5ch'}"
+             [(ngModel)]="qp"
+             (keyup)="saveQp()">
+    </mat-form-field>
+  </div>
+
+
+  <div class="title-div">
+    <span (click)="incrementIronmanType()" style="margin-right: 10px; cursor: pointer;">
+      <img class="iron-logo" [src]="'assets/hcim.png'" [ngStyle]="{width: ironSize + 'px'}" alt="HCIM Logo"
+           *ngIf="ironmanType === 1">
+    <img class="iron-logo" [src]="'assets/im.png'" [ngStyle]="{width: ironSize + 'px'}" alt="IM Logo"
+         *ngIf="ironmanType === 2">
+    <img class="iron-logo" [src]="'assets/uim.png'" [ngStyle]="{width: ironSize + 'px'}" alt="UIM Logo"
+         *ngIf="ironmanType === 3">
+      <img class="iron-logo" [src]="'assets/main-icon.png'" [ngStyle]="{width: ironSize + 'px'}"
+           *ngIf="ironmanType === -1" alt="Click to set Ironman status">
+      <img class="iron-logo" [src]="'assets/iron-filler.png'" [ngStyle]="{width: ironSize + 'px'}"
+           *ngIf="ironmanType === 0" alt="Main">
+    </span>
+    <span [ngStyle]="styleService.titleFont?.getStyles()">
+      <input type="text" class="title-input"
+             [ngStyle]="{width: (title.length) + 'ch', color: titleColor}"
+             [(ngModel)]="title"
+             (keyup)="saveTitle()">
+    </span>
+  </div>
+  <div data-html2canvas-ignore class="collapse" id="itemSearchCollapse">
+    <form class="item-search-form">
+      <mat-form-field>
+        <mat-label>Category</mat-label>
+        <mat-select [formControl]="searchFormControl" [errorStateMatcher]="searchErrorStateMatcher"
+                    [(value)]="selectedCategoryName">
+          <mat-option *ngFor="let category of categories" [value]="category.name">
+            {{category.name}}
+          </mat-option>
+        </mat-select>
+        <mat-error *ngIf="searchFormControl.hasError('required')">Category is required!</mat-error>
+      </mat-form-field>
+      <mat-form-field>
+        <mat-label>Item name</mat-label>
+        <input matInput [(ngModel)]="query" (keyup)="findItemByName()" name="query">
+      </mat-form-field>
+      <button mat-mini-fab color="warn" aria-label="hide search results" data-toggle="collapse"
+              data-target="#itemSearchCollapse"
+              aria-expanded="true" aria-controls="itemSearchCollapse">
+        <span class="material-icons">visibility_off</span>
+      </button>
+    </form>
+
+    <div class="row">
+      <div class="col-xs-12">
+        <div id="search-preview">
+        <span *ngFor="let item of searchResults">
+          <img class="search-preview-img" [src]="'https://www.osrsbox.com/osrsbox-db/items-icons/' + item.id + '.png'" [title]="item.name"
+               (click)="addItemToCategory(item)">
+        </span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<!--  right - 50 left 30-->
+  <div class="container-fluid text-center card-columns" style="margin-bottom: 100px; padding-right: 40px;">
+    <span *ngFor="let category of categories; index as i;">
+      <div class="card card-category"
+           [ngStyle]="{'background-color': styleService.cardColor,
+           'border': (styleService.cardBorderWidth + 'px solid ' + styleService.cardBorderColor), 'margin': styleService.cardMargin + 'px'}">
+    <div class="card-header text-center category-header"
+         [ngStyle]="{'background-color': styleService.cardHeaderColor,
+         'border-bottom': (styleService.cardBorderWidth + 'px solid ' + styleService.cardBorderColor)}">
+      <div class="edit-category-btn-wrapper">
+        <span data-html2canvas-ignore class="edit-btn material-icons edit-category-btn" (click)="toggleEditingCategory(category)"
+              [ngStyle]="{color: (this.editingCategories.includes(category) ? 'white' : '')}"
+              data-toggle="collapse" [attr.data-target]="'.' + category.name.replace(' ','') + i + 'Collapse'">
+          edit
+        </span>
+      </div>
+
+      <input class="category-title-input" [value]="category.name" [(ngModel)]="categories[i].name"
+             [ngStyle]="getCategoryTitleWidth(category.name)">
+      <br />
+      <span *ngIf="styleService.showCategoryKc && category.kc && category.kc > 0">{{category.kc}} kc </span>
+      <span *ngIf="styleService.showProgress"
+            [ngStyle]="{color: progressColor}">{{getCategoryProgress(category)}}</span>
+
+      <button data-html2canvas-ignore type="button" class="close" aria-label="Close"
+              data-toggle="modal" data-target="#deleteCategoryModal" (click)="categoryBeingRemoved = category">
+        <span aria-hidden="true" class="close-category">&times;</span>
+      </button>
+
+
+<div data-html2canvas-ignore class="collapse" style="margin-top: 5px;"
+     [ngClass]="category.name.replace(' ','') + i + 'Collapse'">
+  <div class="card card-body edit-card">
+    <div class="container-fluid" style="padding: 0; overflow: hidden">
+        <div class="row" style="margin: 0">
+<!--        <div class="col" style="padding: 0;">-->
+<!--          <label style="margin-right: 5px">Width:</label>-->
+<!--          <input type="number" class="dimension-control"-->
+<!--                 [ngStyle]="{width: getDimensionControlWidth(category.x) + 'ch'}"-->
+<!--                 [(ngModel)]="category.x" (ngModelChange)="saveCategories()" min="1" max="99">-->
+<!--          <span class="material-icons edit-btn" title="Remove width" style="color: red;" *ngIf="category.x != null"-->
+<!--                (click)="category.x = null; saveCategories();">-->
+<!--            clear-->
+<!--          </span>-->
+<!--        </div>-->
+          <div class="col" style="padding: 0;">
+<!--          <label style="margin-right: 5px">KC:</label>-->
+            <mat-form-field>
+              <mat-label>KC</mat-label>
+              <input matInput type="number" class="dimension-control"
+                     [(ngModel)]="category.kc" (ngModelChange)="saveCategories()" min="0" max="999999">
+            </mat-form-field>
+
+        </div>
+        </div>
+      <div class="row">
+            <div class="col" style="padding: 0; margin-bottom: 5px;">
+              <button mat-raised-button color="primary" (click)="moveCategoryUp(i)">
+                <span class="material-icons">keyboard_arrow_up</span>
+              </button>
+            </div>
+        <div class="col">
+          <button mat-raised-button color="accent" (click)="editingCategory = category; editingItems = category.items"
+                  data-toggle="modal" data-target="#itemInfoModal" style="margin-bottom: 5px">
+            KC/Qty
+          </button>
+        </div>
+        <div class="col" style="padding: 0;">
+              <button mat-raised-button color="primary" (click)="moveCategoryDown(i)">
+                          <span class="material-icons">keyboard_arrow_down</span>
+              </button>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col">
+          <button mat-raised-button color="accent" (click)="category.items.push({id: null, icon: '', name: '', unlocked: false}); saveCategories();">
+            Add Invisible Filler
+          </button>
+        </div>
+      </div>
+      </div>
+  </div>
+</div>
+      <mat-progress-bar mode="determinate" [color]="styleService.progressBarColor"
+                        value="{{getCategoryProgressPercent(category)}}"
+                        *ngIf="styleService.showProgressBar"></mat-progress-bar>
+    </div>
+
+<!--        [src]="'data:image/png;base64,' + item.icon"-->
+    <div class="container card-body text-center">
+      <span class="item-span" *ngFor="let item of category.items; index as index;">
+        <img class="diary-item" *ngIf="item.id != null"
+             [ngStyle]="{width: styleService.iconSize + 'px', opacity: (item.unlocked ? 1 : (lockedOpacity / 100))}"
+             [src]="'https://www.osrsbox.com/osrsbox-db/items-icons/' + item.id + '.png'"
+             [title]="item.name + (item.kc ? '\nKC(s): ' + item.kc : '')"
+             (click)="toggleItemUnlocked(item, category)" [ngClass]="!item.unlocked ? 'item-locked' : ''">
+
+        <img [src]="'assets/filler.png'" *ngIf="item.id == null" [ngStyle]="{width: styleService.iconSize + 'px'}">
+
+                <span class="item-kc" [ngStyle]="getItemKcStyles()" *ngIf="item.kc && styleService.showKc">
+                  {{item.kc.substr(0, (item.kc.includes(',') ? item.kc.indexOf(',') : item.kc.length))}} kc
+                </span>
+        <span class="item-qty" [ngStyle]="getItemQtyStyles()" *ngIf="item.quantity && styleService.showQty">
+          x{{item.quantity}}
+        </span>
+
+        <span data-html2canvas-ignore *ngIf="editingCategories.includes(category)" class="edit-item-span">
+          <span class="material-icons swap-items-icon" title="Swap position"
+                [ngStyle]="{color: (index == swappingIndex && category == swappingCategory ? 'red' : 'rgba(256,256,256,.75')}"
+                (click)="swapItem(index, category)">
+            swap_horiz
+          </span>
+          <span *ngIf="!category.locked" class="material-icons" [ngStyle]="{left: (iconSize / 2) +'px', color: 'rgba(255,0,0,.8)'}"
+                title="Remove" data-toggle="modal" data-target="#deleteItemModal"
+                (click)="deletingItem = item; categoryOfDeletingItem = category;">
+            clear
+          </span>
+        </span>
+      </span>
+      <div data-html2canvas-ignore class="category-lock-wrapper" (click)="toggleCategoryLocked(category)">
+        <span class="material-icons category-lock" *ngIf="category.locked" Title="Items can't be removed from this category until you unlock it">lock</span>
+        <span class="material-icons category-lock" *ngIf="!category.locked">lock_open</span>
+      </div>
+    </div>
+  </div>
+
+  </span>
+  </div>
+
+  <div data-html2canvas-ignore class="collapse" id="addCollapse" style="z-index: 99999 !important">
+    <div class="card card-body add-item-category-collapse">
+      <button mat-raised-button color="accent" data-toggle="collapse" data-target="#itemSearchCollapse"
+              aria-expanded="false" aria-controls="itemSearchCollapse" (click)="scrollToTop()">
+        Item
+      </button>
+      <button mat-raised-button color="accent" data-toggle="modal" data-target="#addCategoryModal">Category</button>
+    </div>
+  </div>
+
+  <button mat-fab color="primary" class="add-category-btn" data-html2canvas-ignore data-toggle="collapse"
+          data-target="#addCollapse"
+          aria-expanded="false" aria-controls="addCollapse">
+    <span class="material-icons">add</span>
+  </button>
+
+  <div data-html2canvas-ignore class="card bottom-btn-card" style="background-color: #333;">
+    <div class="action-btn-div">
+      <button mat-raised-button color="warn" data-toggle="modal" data-target="#resetModal" style="margin-right: 5px">
+        <span class="material-icons">replay</span>
+        Reset
+      </button>
+      <button mat-raised-button color="primary" (click)="captureScreenshot()">
+        <span class="material-icons">save</span>
+        Save Image
+      </button>
+      <button mat-raised-button color="accent" style="margin-left: 5px;" data-toggle="modal"
+              data-target="#styleModal">
+        <span class="material-icons" style="color: #333;">insert_photo</span>
+        Style settings
+      </button>
+      <button mat-raised-button ngxClipboard color="accent" style="margin-left: 5px;" [cbContent]="getCategoryJSON()"
+              (cbOnSuccess)="showClipboardSuccess()">
+        <span class="material-icons" style="color: #333;">launch</span>
+        Export categories
+      </button>
+      <button mat-raised-button color="accent" style="margin-left: 5px;" data-toggle="modal" data-target="#importModal">
+        <span class="material-icons" style="color: #333;">input</span>
+        Import categories
+      </button>
+    </div>
+  </div>
+
+  <div data-html2canvas-ignore class="card footer-card">
+    <span style="float: left; margin-left: 20px;">Jagex and Runescape are trademarks of Jagex Ltd.</span>
+    <span style="float: right; margin-right: 20px;">Developed using Angular, Bootstrap, and the <a
+      href="https://www.osrsbox.com/" target="_blank">OSRSBox API</a></span>
+  </div>
+</div>
+
+<div class="modal fade" id="importModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Import Categories</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body" style="color: white">
+        <mat-form-field>
+          <mat-label>Categories code</mat-label>
+          <input matInput type="text" [(ngModel)]="categoryImportInput" style="color: white;">
+        </mat-form-field>
+      </div>
+      <div class="modal-footer">
+        <button mat-raised-button color="warn" (click)="applyCategoryImport()" data-dismiss="modal">Apply</button>
+        <button mat-raised-button color="accent" data-dismiss="modal">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<div class="modal fade" data-backdrop="static" id="styleModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Style Settings</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <mat-tab-group [selectedIndex]="0">
+          <mat-tab label="Background">
+            <div>
+              <label for="bg-upload">Background image:</label>
+              <input type="file" id="bg-upload" name="bg-upload" accept="image/png, image/jpeg"
+                     (change)="bgUploaded($event)">
+            </div>
+            <div>
+              <label for="bg-opacity">Background image opacity (%):</label>
+              <input id="bg-opacity" type="number" min="0" max="100" style="color: black;" [(ngModel)]="bgOpacity">
+            </div>
+            <div>
+              <label for="bg-color">Background color:</label>
+              <input id="bg-color" [(colorPicker)]="bgColor" [cpOutputFormat]="'rgba'" [cpAlphaChannel]="'always'"
+                     [cpPosition]="'left'" [style.background]="bgColor"/>
+            </div>
+            <div>
+              <label for="fade-bg">Fade background image:</label>
+              <mat-slide-toggle id="fade-bg" [(ngModel)]="fadeBg" [checked]="true"></mat-slide-toggle>
+            </div>
+          </mat-tab>
+          <mat-tab label="Categories">
+            <div>
+              <label for="header-color">Category name color:</label>
+              <input id="header-color" [(colorPicker)]="headerColor" [cpPosition]="'left'"
+                     [style.background]="headerColor"/>
+            </div>
+            <div>
+              <label for="progress-color">Category progress color:</label>
+              <input id="progress-color" [(colorPicker)]="progressColor" [cpPosition]="'left'"
+                     [style.background]="progressColor"/>
+            </div>
+            <div>
+              <label for="category-kc-color">Category killcount color:</label>
+              <input id="category-kc-color" [(colorPicker)]="categoryKcColor" [cpPosition]="'left'"
+                     [style.background]="categoryKcColor"/>
+            </div>
+            <div>
+              <label for="card-color">Card body color:</label>
+              <input id="card-color" [(colorPicker)]="cardColor" [cpPosition]="'left'" [style.background]="cardColor"/>
+            </div>
+            <div>
+              <label for="card-header-color">Card header color:</label>
+              <input id="card-header-color" [(colorPicker)]="cardHeaderColor" [cpPosition]="'left'"
+                     [style.background]="cardHeaderColor"/>
+            </div>
+            <div>
+              <label for="card-border-color">Card border color:</label>
+              <input id="card-border-color" [(colorPicker)]="cardBorderColor" [cpPosition]="'left'"
+                     [style.background]="cardBorderColor"/>
+            </div>
+            <div>
+              <label for="card-margin">Card margin (px):</label>
+              <input id="card-margin" type="number" min="0" max="200" style="color: black;"
+                     [(ngModel)]="cardMargin">
+            </div>
+            <div>
+              <label for="card-border-width">Card border width (px):</label>
+              <input id="card-border-width" type="number" min="1" max="50" style="color: black;"
+                     [(ngModel)]="cardBorderWidth">
+            </div>
+            <div>
+              <label for="icon-size">Item icon size (px):</label>
+              <input id="icon-size" type="number" min="1" max="999" style="color: black;" [(ngModel)]="iconSize">
+            </div>
+            <div>
+              <label for="locked-opacity">Locked item opacity (%):</label>
+              <input id="locked-opacity" type="number" min="0" max="100" style="color: black;"
+                     [(ngModel)]="lockedOpacity">
+            </div>
+
+
+<!--            <div>-->
+<!--              <label for="progress-bar-color">Progress bar color:</label>-->
+<!--              <mat-radio-group [(ngModel)]="progressBarColor" id="progress-bar-color" style="display:inline-block">-->
+<!--                <mat-radio-button value="primary">Primary</mat-radio-button>-->
+<!--                <mat-radio-button value="accent">Accent</mat-radio-button>-->
+<!--                <mat-radio-button value="warn">Warn</mat-radio-button>-->
+<!--              </mat-radio-group>-->
+<!--            </div>-->
+<!--            <div>-->
+<!--              <label for="show-progress-bar">Show progress bar:</label>-->
+<!--              <mat-slide-toggle id="show-progress-bar" [(ngModel)]="showProgressBar"-->
+<!--                                [checked]="true"></mat-slide-toggle>-->
+<!--            </div>-->
+
+
+            <div>
+              <label for="show-kc">Show item killcount:</label>
+              <mat-slide-toggle id="show-kc" [(ngModel)]="showKc" [checked]="true"></mat-slide-toggle>
+            </div>
+            <div>
+              <label for="show-category-kc">Show category killcount:</label>
+              <mat-slide-toggle id="show-category-kc" [(ngModel)]="showCategoryKc" [checked]="true"></mat-slide-toggle>
+            </div>
+            <div>
+              <label for="show-qty">Show item quantity:</label>
+              <mat-slide-toggle id="show-qty" [(ngModel)]="showQty" [checked]="true"></mat-slide-toggle>
+            </div>
+            <div>
+              <label for="show-progress">Show category progress:</label>
+              <mat-slide-toggle id="show-progress" [(ngModel)]="showProgress" [checked]="true"></mat-slide-toggle>
+            </div>
+          </mat-tab>
+          <mat-tab label="Title">
+            <div>
+              <label for="iron-size">Ironman icon size (px):</label>
+              <input id="iron-size" type="number" min="0" max="1000" style="color: black;" [(ngModel)]="ironSize">
+            </div>
+            <div>
+              <label for="qp-icon-size">Quest Points icon size (px):</label>
+              <input id="qp-icon-size" type="number" min="0" max="100" style="color: black;" [(ngModel)]="qpIconSize">
+            </div>
+            <div>
+              <label for="show-qp">Show quest points:</label>
+              <mat-slide-toggle id="show-qp" [(ngModel)]="showQp" [checked]="true"></mat-slide-toggle>
+            </div>
+            <div>
+              <label for="title-color">Title text color:</label>
+              <input id="title-color" [(colorPicker)]="titleColor" [cpPosition]="'left'"
+                     [style.background]="titleColor"/>
+            </div>
+            <div>
+              <label for="title-font">Title font:</label>
+              <div id="title-font" [(fontPicker)]="titleFont" [fpWidth]="'320px'" [fpPosition]="'bottom'">
+                <button class="btn btn-danger">Font picker</button>
+                <span class="title-font-preview" *ngIf="title && titleFont"
+                      [ngStyle]="titleFont?.getStyles()">{{title}}</span>
+              </div>
+            </div>
+          </mat-tab>
+        </mat-tab-group>
+      </div>
+      <div class="modal-footer">
+        <button mat-raised-button color="primary" data-dismiss="modal" (click)="applyStyles()">Apply</button>
+        <button mat-raised-button color="accent" data-dismiss="modal" (click)="cancelStyles()">Cancel</button>
+        <button mat-raised-button color="warn" (click)="resetStyles()">Reset</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="addCategoryModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Add Category</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <mat-tab-group (selectedTabChange)="addCategorySelectedTab = ($event.index)">
+          <mat-tab label="New">
+            <mat-form-field>
+              <mat-label>Category name</mat-label>
+              <input matInput id="categoryName" [formControl]="addNewCategoryFormControl" style="color: white;"
+                     [errorStateMatcher]="searchErrorStateMatcher" [(ngModel)]="modalCategoryInput">
+              <mat-error *ngIf="addNewCategoryFormControl.hasError('required')">Category name is required!</mat-error>
+            </mat-form-field>
+          </mat-tab>
+          <mat-tab label="Default">
+            <mat-form-field>
+              <mat-label>Category</mat-label>
+              <mat-select [formControl]="addDefaultCategoryFormControl" [errorStateMatcher]="searchErrorStateMatcher"
+                          [(value)]="defaultCategorySelectedInModal">
+                <mat-option *ngFor="let category of defaultCategories" [value]="category.name">
+                  {{category.name}}
+                </mat-option>
+              </mat-select>
+              <mat-error *ngIf="addDefaultCategoryFormControl.hasError('required')">Category is required!</mat-error>
+            </mat-form-field>
+          </mat-tab>
+        </mat-tab-group>
+      </div>
+      <div class="modal-footer">
+        <button mat-raised-button color="primary" (click)="addCategory()" data-dismiss="modal"
+                [disabled]="(addCategorySelectedTab == 0 && addNewCategoryFormControl.hasError('required'))
+                 || (addCategorySelectedTab == 1 && addDefaultCategoryFormControl.hasError('required'))">
+          Add Category
+        </button>
+        <button mat-raised-button color="accent" data-dismiss="modal">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="resetModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Reset Categories</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body" style="color: white">
+        Are you sure you want to reset all categories to default?
+      </div>
+      <div class="modal-footer">
+        <button mat-raised-button color="warn" (click)="reset()" data-dismiss="modal">Reset</button>
+        <button mat-raised-button color="accent" data-dismiss="modal">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="deleteCategoryModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Delete Category?</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body" style="color: white">
+        Are you sure you want to delete the category: <span
+        *ngIf="categoryBeingRemoved">{{categoryBeingRemoved.name}}</span>?
+      </div>
+      <div class="modal-footer">
+        <button mat-raised-button color="warn" (click)="removeCategory(categoryBeingRemoved)" data-dismiss="modal">
+          Delete
+        </button>
+        <button mat-raised-button color="accent" data-dismiss="modal">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="itemInfoModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Kill Count and Quantity</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <span *ngIf="getUnlockedItemsCount(editingItems) === 0" style="color: white;">
+          No items in this category are unlocked!
+        </span>
+        <span *ngIf="editingCategory">
+          <span *ngFor="let item of editingItems; index as i;">
+            <div class="row" *ngIf="item.unlocked && item.id != null">
+              <div class="col-xs-6">
+                <img [src]="'data:image/png;base64,' + item.icon" [title]="item.name">
+                <label>{{item.name}}</label>
+              </div>
+              <div class="col-3">
+                <input class="form-control" type="text" placeholder="kc" [(ngModel)]="item.kc">
+              </div>
+              <div class="col-3">
+                <input class="form-control" type="text" placeholder="quantity" [(ngModel)]="item.quantity">
+              </div>
+            </div>
+        </span>
+        </span>
+      </div>
+      <div class="modal-footer">
+        <button mat-raised-button color="accent" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="deleteItemModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Delete Item?</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body" style="color: white">
+        Are you sure you want to delete the {{deletingItem == null || deletingItem.id == null ? 'filler' : 'item: '}}
+        <span *ngIf="deletingItem && deletingItem.id != null">{{deletingItem.name}}</span>
+        from the category: <span *ngIf="categoryOfDeletingItem">{{categoryOfDeletingItem.name}}</span>?
+      </div>
+      <div class="modal-footer">
+        <button mat-raised-button color="warn" (click)="removeItem(categoryOfDeletingItem, deletingItem)" data-dismiss="modal">
+          Delete
+        </button>
+        <button mat-raised-button color="accent" data-dismiss="modal">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
