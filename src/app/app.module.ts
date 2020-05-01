@@ -46,7 +46,7 @@ import {DEFAULT_FONT_PICKER_CONFIG} from "./config";
     MatButtonModule,
     ClipboardModule,
     MatSnackBarModule,
-    NgbModule.forRoot(),
+    NgbModule,
   ],
   providers: [
     {
