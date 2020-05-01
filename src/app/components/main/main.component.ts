@@ -192,7 +192,7 @@ export class MainComponent implements OnInit {
     if (!this.query || this.query.length < 3)
       return;
     for (let key in this.itemData) {
-      if (this.itemData.hasOwnProperty(key) && this.itemData[key]['name']) {
+      if (this.itemData.hasOwnProperty(key) && this.itemData[key]['name'] && !this.itemData[key]['duplicate']) {
         let itemName: string = this.itemData[key]['name'];
         if (itemName.toLowerCase().includes(this.query.toLowerCase())) {
           let item: Item = {
@@ -200,14 +200,7 @@ export class MainComponent implements OnInit {
             name: this.itemData[key]['name'],
             unlocked: false
           };
-          let shouldAdd = true;
-          this.searchResults.forEach(result => {
-            if (result.name === item.name && result.id < item.id) {
-              shouldAdd = false;
-            }
-          });
-          if (shouldAdd)
-            this.searchResults.push(item);
+          this.searchResults.push(item);
         }
       }
     }
