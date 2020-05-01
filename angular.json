@@ -25,7 +25,8 @@
             "aot": false,
             "assets": [
               "./src/favicon.png",
-              "src/assets"
+              "src/assets",
+              "src/favicon.png"
             ],
             "styles": [
               "./node_modules/@angular/material/prebuilt-themes/pink-bluegrey.css",

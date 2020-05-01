@@ -1,7 +1,7 @@
 <div class="container-fluid main-container" [ngStyle]="styleService.getBgStyle()">
 
-  <div class="qp-div" [ngClass]="(qp == null || qp == '' || qp == '0' ? 'ss-hide' : '')" *ngIf="styleService.showQp" [ngStyle]="{top: (65 - (styleService.qpIconSize - 50)) + 'px'}">
-    <img [src]="'assets/qp.png'" [ngStyle]="{width: styleService.qpIconSize + 'px'}">
+  <div class="qp-div" [ngClass]="(qp == null || qp == '' || qp == '0' ? 'ss-hide' : '')" *ngIf="styleService.appliedStyles.showQp" [ngStyle]="{top: (65 - (styleService.appliedStyles.qpIconSize - 50)) + 'px'}">
+    <img [src]="'assets/qp.png'" [ngStyle]="{width: styleService.appliedStyles.qpIconSize + 'px'}">
     <mat-form-field appearance="none">
       <mat-label>Quest Points</mat-label>
       <input matInput type="number" class="qp-input" [min]="0" [max]="275" [ngStyle]="{width: '5ch'}"
@@ -10,23 +10,22 @@
     </mat-form-field>
   </div>
 
-
   <div class="title-div">
     <span (click)="incrementIronmanType()" style="margin-right: 10px; cursor: pointer;">
-      <img class="iron-logo" [src]="'assets/hcim.png'" [ngStyle]="{width: ironSize + 'px'}" alt="HCIM Logo"
+      <img class="iron-logo" [src]="'assets/hcim.png'" [ngStyle]="{width: styleService.appliedStyles.ironSize + 'px'}" alt="HCIM Logo"
            *ngIf="ironmanType === 1">
-    <img class="iron-logo" [src]="'assets/im.png'" [ngStyle]="{width: ironSize + 'px'}" alt="IM Logo"
+    <img class="iron-logo" [src]="'assets/im.png'" [ngStyle]="{width: styleService.appliedStyles.ironSize + 'px'}" alt="IM Logo"
          *ngIf="ironmanType === 2">
-    <img class="iron-logo" [src]="'assets/uim.png'" [ngStyle]="{width: ironSize + 'px'}" alt="UIM Logo"
+    <img class="iron-logo" [src]="'assets/uim.png'" [ngStyle]="{width: styleService.appliedStyles.ironSize + 'px'}" alt="UIM Logo"
          *ngIf="ironmanType === 3">
-      <img class="iron-logo" [src]="'assets/main-icon.png'" [ngStyle]="{width: ironSize + 'px'}"
+      <img class="iron-logo" [src]="'assets/main-icon.png'" [ngStyle]="{width: styleService.appliedStyles.ironSize + 'px'}"
            *ngIf="ironmanType === -1" alt="Click to set Ironman status">
-      <img class="iron-logo" [src]="'assets/iron-filler.png'" [ngStyle]="{width: ironSize + 'px'}"
+      <img class="iron-logo" [src]="'assets/iron-filler.png'" [ngStyle]="{width: styleService.appliedStyles.ironSize + 'px'}"
            *ngIf="ironmanType === 0" alt="Main">
     </span>
-    <span [ngStyle]="styleService.titleFont?.getStyles()">
+    <span [ngStyle]="styleService.appliedStyles.titleFont?.getStyles()">
       <input type="text" class="title-input"
-             [ngStyle]="{width: (title.length) + 'ch', color: titleColor}"
+             [ngStyle]="{width: (title.length) + 'ch', color: styleService.appliedStyles.titleColor}"
              [(ngModel)]="title"
              (keyup)="saveTitle()">
     </span>
@@ -68,11 +67,11 @@
   <div class="container-fluid text-center card-columns" style="margin-bottom: 100px; padding-right: 40px;">
     <span *ngFor="let category of categories; index as i;">
       <div class="card card-category"
-           [ngStyle]="{'background-color': styleService.cardColor,
-           'border': (styleService.cardBorderWidth + 'px solid ' + styleService.cardBorderColor), 'margin': styleService.cardMargin + 'px'}">
+           [ngStyle]="{'background-color': styleService.appliedStyles.cardColor,
+           'border': (styleService.appliedStyles.cardBorderWidth + 'px solid ' + styleService.appliedStyles.cardBorderColor), 'margin': styleService.cardMargin + 'px'}">
     <div class="card-header text-center category-header"
-         [ngStyle]="{'background-color': styleService.cardHeaderColor,
-         'border-bottom': (styleService.cardBorderWidth + 'px solid ' + styleService.cardBorderColor)}">
+         [ngStyle]="{'background-color': styleService.appliedStyles.cardHeaderColor,
+         'border-bottom': (styleService.appliedStyles.cardBorderWidth + 'px solid ' + styleService.appliedStyles.cardBorderColor)}">
       <div class="edit-category-btn-wrapper">
         <span data-html2canvas-ignore class="edit-btn material-icons edit-category-btn" (click)="toggleEditingCategory(category);"
               [attr.aria-expanded]="editingCategories.includes(category)" [attr.aria-controls]="category.name.replace(' ','') + i + 'Collapse'"
@@ -84,15 +83,14 @@
       <input class="category-title-input" [value]="category.name" [(ngModel)]="categories[i].name"
              [ngStyle]="getCategoryTitleWidth(category.name)">
       <br />
-      <span *ngIf="styleService.showCategoryKc && category.kc && category.kc > 0">{{category.kc}} kc </span>
-      <span *ngIf="styleService.showProgress"
-            [ngStyle]="{color: progressColor}">{{getCategoryProgress(category)}}</span>
+      <span *ngIf="styleService.appliedStyles.showCategoryKc && category.kc && category.kc > 0">{{category.kc}} kc </span>
+      <span *ngIf="styleService.appliedStyles.showProgress"
+            [ngStyle]="{color: styleService.appliedStyles.progressColor}">{{getCategoryProgress(category)}}</span>
 
       <button data-html2canvas-ignore type="button" class="close" aria-label="Close"
               data-toggle="modal" data-target="#deleteCategoryModal" (click)="categoryBeingRemoved = category">
         <span aria-hidden="true" class="close-category">&times;</span>
       </button>
-
 
 <div data-html2canvas-ignore class="collapse" style="margin-top: 5px;"
      [id]="category.name.replace(' ','') + i + 'Collapse'" [ngbCollapse]="!editingCategories.includes(category)">
@@ -128,7 +126,7 @@
       </div>
       <div class="row">
         <div class="col">
-          <button mat-raised-button color="accent" (click)="category.items.push({id: null, icon: '', name: '', unlocked: false}); saveCategories();">
+          <button mat-raised-button color="accent" (click)="category.items.push({id: null, name: '', unlocked: false}); saveCategories();">
             Add Invisible Filler
           </button>
         </div>
@@ -136,24 +134,24 @@
       </div>
   </div>
 </div>
-      <mat-progress-bar mode="determinate" [color]="styleService.progressBarColor"
+      <mat-progress-bar mode="determinate" [color]="styleService.appliedStyles.progressBarColor"
                         value="{{getCategoryProgressPercent(category)}}"
-                        *ngIf="styleService.showProgressBar"></mat-progress-bar>
+                        *ngIf="styleService.appliedStyles.showProgressBar"></mat-progress-bar>
     </div>
     <div class="container card-body text-center">
       <span class="item-span" *ngFor="let item of category.items; index as index;">
         <img class="diary-item" *ngIf="item.id != null"
-             [ngStyle]="{width: styleService.iconSize + 'px', opacity: (item.unlocked ? 1 : (lockedOpacity / 100))}"
+             [ngStyle]="{width: styleService.appliedStyles.iconSize + 'px', opacity: (item.unlocked ? 1 : (styleService.appliedStyles.lockedOpacity / 100))}"
              [src]="'https://www.osrsbox.com/osrsbox-db/items-icons/' + item.id + '.png'"
              [title]="item.name + (item.kc ? '\nKC(s): ' + item.kc : '')"
              (click)="toggleItemUnlocked(item, category)" [ngClass]="!item.unlocked ? 'item-locked' : ''">
 
-        <img [src]="'assets/filler.png'" *ngIf="item.id == null" [ngStyle]="{width: styleService.iconSize + 'px'}">
+        <img [src]="'assets/filler.png'" *ngIf="item.id == null" [ngStyle]="{width: styleService.appliedStyles.iconSize + 'px'}">
 
-                <span class="item-kc" [ngStyle]="getItemKcStyles()" *ngIf="item.kc && styleService.showKc">
+                <span class="item-kc" [ngStyle]="getItemKcStyles()" *ngIf="item.kc && styleService.appliedStyles.showKc">
                   {{item.kc.substr(0, (item.kc.includes(',') ? item.kc.indexOf(',') : item.kc.length))}} kc
                 </span>
-        <span class="item-qty" [ngStyle]="getItemQtyStyles()" *ngIf="item.quantity && styleService.showQty">
+        <span class="item-qty" [ngStyle]="getItemQtyStyles()" *ngIf="item.quantity && styleService.appliedStyles.showQty">
           x{{item.quantity}}
         </span>
 
@@ -163,7 +161,7 @@
                 (click)="swapItem(index, category)">
             swap_horiz
           </span>
-          <span *ngIf="!category.locked" class="material-icons" [ngStyle]="{left: (iconSize / 2) +'px', color: 'rgba(255,0,0,.8)'}"
+          <span *ngIf="!category.locked" class="material-icons" [ngStyle]="{left: (styleService.appliedStyles.iconSize / 2) +'px', color: 'rgba(255,0,0,.8)'}"
                 title="Remove" data-toggle="modal" data-target="#deleteItemModal"
                 (click)="deletingItem = item; categoryOfDeletingItem = category;">
             clear
@@ -176,7 +174,6 @@
       </div>
     </div>
   </div>
-
   </span>
   </div>
 
@@ -255,7 +252,6 @@
   </div>
 </div>
 
-
 <div class="modal fade" data-backdrop="static" id="styleModal" tabindex="-1" role="dialog">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
@@ -275,134 +271,134 @@
             </div>
             <div>
               <label for="bg-opacity">Background image opacity (%):</label>
-              <input id="bg-opacity" type="number" min="0" max="100" style="color: black;" [(ngModel)]="bgOpacity">
+              <input id="bg-opacity" type="number" min="0" max="100" style="color: black;" [(ngModel)]="styleService.pendingStyles.bgOpacity">
             </div>
             <div>
               <label for="bg-color">Background color:</label>
-              <input id="bg-color" [(colorPicker)]="bgColor" [cpOutputFormat]="'rgba'" [cpAlphaChannel]="'always'"
-                     [cpPosition]="'left'" [style.background]="bgColor"/>
+              <input id="bg-color" [(colorPicker)]="styleService.pendingStyles.bgColor" [cpOutputFormat]="'rgba'" [cpAlphaChannel]="'always'"
+                     [cpPosition]="'left'" [style.background]="styleService.pendingStyles.bgColor"/>
             </div>
             <div>
               <label for="fade-bg">Fade background image:</label>
-              <mat-slide-toggle id="fade-bg" [(ngModel)]="fadeBg" [checked]="true"></mat-slide-toggle>
+              <mat-slide-toggle id="fade-bg" [(ngModel)]="styleService.pendingStyles.fadeBg" [checked]="true"></mat-slide-toggle>
             </div>
+            <label for="locked-opacity">Fade start position (%):</label>
+            <input id="locked-opacity" type="number" min="0" max="100" style="color: black;"
+                   [(ngModel)]="styleService.pendingStyles.fadeStart">
           </mat-tab>
           <mat-tab label="Categories">
             <div>
               <label for="header-color">Category name color:</label>
-              <input id="header-color" [(colorPicker)]="headerColor" [cpPosition]="'left'"
-                     [style.background]="headerColor"/>
+              <input id="header-color" [(colorPicker)]="styleService.pendingStyles.headerColor" [cpPosition]="'left'"
+                     [style.background]="styleService.pendingStyles.headerColor"/>
             </div>
             <div>
               <label for="progress-color">Category progress color:</label>
-              <input id="progress-color" [(colorPicker)]="progressColor" [cpPosition]="'left'"
-                     [style.background]="progressColor"/>
+              <input id="progress-color" [(colorPicker)]="styleService.pendingStyles.progressColor" [cpPosition]="'left'"
+                     [style.background]="styleService.pendingStyles.progressColor"/>
             </div>
             <div>
               <label for="category-kc-color">Category killcount color:</label>
-              <input id="category-kc-color" [(colorPicker)]="categoryKcColor" [cpPosition]="'left'"
-                     [style.background]="categoryKcColor"/>
+              <input id="category-kc-color" [(colorPicker)]="styleService.pendingStyles.categoryKcColor" [cpPosition]="'left'"
+                     [style.background]="styleService.pendingStyles.categoryKcColor"/>
             </div>
             <div>
               <label for="card-color">Card body color:</label>
-              <input id="card-color" [(colorPicker)]="cardColor" [cpPosition]="'left'" [style.background]="cardColor"/>
+              <input id="card-color" [(colorPicker)]="styleService.pendingStyles.cardColor" [cpPosition]="'left'" [style.background]="styleService.pendingStyles.cardColor"/>
             </div>
             <div>
               <label for="card-header-color">Card header color:</label>
-              <input id="card-header-color" [(colorPicker)]="cardHeaderColor" [cpPosition]="'left'"
-                     [style.background]="cardHeaderColor"/>
+              <input id="card-header-color" [(colorPicker)]="styleService.pendingStyles.cardHeaderColor" [cpPosition]="'left'"
+                     [style.background]="styleService.pendingStyles.cardHeaderColor"/>
             </div>
             <div>
               <label for="card-border-color">Card border color:</label>
-              <input id="card-border-color" [(colorPicker)]="cardBorderColor" [cpPosition]="'left'"
-                     [style.background]="cardBorderColor"/>
+              <input id="card-border-color" [(colorPicker)]="styleService.pendingStyles.cardBorderColor" [cpPosition]="'left'"
+                     [style.background]="styleService.pendingStyles.cardBorderColor"/>
             </div>
             <div>
               <label for="card-margin">Card margin (px):</label>
               <input id="card-margin" type="number" min="0" max="200" style="color: black;"
-                     [(ngModel)]="cardMargin">
+                     [(ngModel)]="styleService.pendingStyles.cardMargin">
             </div>
             <div>
               <label for="card-border-width">Card border width (px):</label>
               <input id="card-border-width" type="number" min="1" max="50" style="color: black;"
-                     [(ngModel)]="cardBorderWidth">
+                     [(ngModel)]="styleService.pendingStyles.cardBorderWidth">
             </div>
             <div>
               <label for="icon-size">Item icon size (px):</label>
-              <input id="icon-size" type="number" min="1" max="999" style="color: black;" [(ngModel)]="iconSize">
+              <input id="icon-size" type="number" min="1" max="999" style="color: black;" [(ngModel)]="styleService.pendingStyles.iconSize">
             </div>
             <div>
               <label for="locked-opacity">Locked item opacity (%):</label>
               <input id="locked-opacity" type="number" min="0" max="100" style="color: black;"
-                     [(ngModel)]="lockedOpacity">
+                     [(ngModel)]="styleService.pendingStyles.lockedOpacity">
             </div>
 
-
-<!--            <div>-->
-<!--              <label for="progress-bar-color">Progress bar color:</label>-->
-<!--              <mat-radio-group [(ngModel)]="progressBarColor" id="progress-bar-color" style="display:inline-block">-->
-<!--                <mat-radio-button value="primary">Primary</mat-radio-button>-->
-<!--                <mat-radio-button value="accent">Accent</mat-radio-button>-->
-<!--                <mat-radio-button value="warn">Warn</mat-radio-button>-->
-<!--              </mat-radio-group>-->
-<!--            </div>-->
-<!--            <div>-->
-<!--              <label for="show-progress-bar">Show progress bar:</label>-->
-<!--              <mat-slide-toggle id="show-progress-bar" [(ngModel)]="showProgressBar"-->
-<!--                                [checked]="true"></mat-slide-toggle>-->
-<!--            </div>-->
-
+            <div>
+              <label for="progress-bar-color">Progress bar color:</label>
+              <mat-radio-group [(ngModel)]="styleService.pendingStyles.progressBarColor" id="progress-bar-color" style="display:inline-block">
+                <mat-radio-button value="primary">Primary</mat-radio-button>
+                <mat-radio-button value="accent">Accent</mat-radio-button>
+                <mat-radio-button value="warn">Warn</mat-radio-button>
+              </mat-radio-group>
+            </div>
+            <div>
+              <label for="show-progress-bar">Show progress bar:</label>
+              <mat-slide-toggle id="show-progress-bar" [(ngModel)]="styleService.pendingStyles.showProgressBar" (change)="showProgressBarWarning()" [checked]="true"></mat-slide-toggle>
+            </div>
 
             <div>
               <label for="show-kc">Show item killcount:</label>
-              <mat-slide-toggle id="show-kc" [(ngModel)]="showKc" [checked]="true"></mat-slide-toggle>
+              <mat-slide-toggle id="show-kc" [(ngModel)]="styleService.pendingStyles.showKc" [checked]="true"></mat-slide-toggle>
             </div>
             <div>
               <label for="show-category-kc">Show category killcount:</label>
-              <mat-slide-toggle id="show-category-kc" [(ngModel)]="showCategoryKc" [checked]="true"></mat-slide-toggle>
+              <mat-slide-toggle id="show-category-kc" [(ngModel)]="styleService.pendingStyles.showCategoryKc" [checked]="true"></mat-slide-toggle>
             </div>
             <div>
               <label for="show-qty">Show item quantity:</label>
-              <mat-slide-toggle id="show-qty" [(ngModel)]="showQty" [checked]="true"></mat-slide-toggle>
+              <mat-slide-toggle id="show-qty" [(ngModel)]="styleService.pendingStyles.showQty" [checked]="true"></mat-slide-toggle>
             </div>
             <div>
               <label for="show-progress">Show category progress:</label>
-              <mat-slide-toggle id="show-progress" [(ngModel)]="showProgress" [checked]="true"></mat-slide-toggle>
+              <mat-slide-toggle id="show-progress" [(ngModel)]="styleService.pendingStyles.showProgress" [checked]="true"></mat-slide-toggle>
             </div>
           </mat-tab>
           <mat-tab label="Title">
             <div>
               <label for="iron-size">Ironman icon size (px):</label>
-              <input id="iron-size" type="number" min="0" max="1000" style="color: black;" [(ngModel)]="ironSize">
+              <input id="iron-size" type="number" min="0" max="1000" style="color: black;" [(ngModel)]="styleService.pendingStyles.ironSize">
             </div>
             <div>
               <label for="qp-icon-size">Quest Points icon size (px):</label>
-              <input id="qp-icon-size" type="number" min="0" max="100" style="color: black;" [(ngModel)]="qpIconSize">
+              <input id="qp-icon-size" type="number" min="0" max="100" style="color: black;" [(ngModel)]="styleService.pendingStyles.qpIconSize">
             </div>
             <div>
               <label for="show-qp">Show quest points:</label>
-              <mat-slide-toggle id="show-qp" [(ngModel)]="showQp" [checked]="true"></mat-slide-toggle>
+              <mat-slide-toggle id="show-qp" [(ngModel)]="styleService.pendingStyles.showQp" [checked]="true"></mat-slide-toggle>
             </div>
             <div>
               <label for="title-color">Title text color:</label>
-              <input id="title-color" [(colorPicker)]="titleColor" [cpPosition]="'left'"
-                     [style.background]="titleColor"/>
+              <input id="title-color" [(colorPicker)]="styleService.pendingStyles.titleColor" [cpPosition]="'left'"
+                     [style.background]="styleService.pendingStyles.titleColor"/>
             </div>
             <div>
               <label for="title-font">Title font:</label>
-              <div id="title-font" [(fontPicker)]="titleFont" [fpWidth]="'320px'" [fpPosition]="'bottom'">
+              <div id="title-font" [(fontPicker)]="styleService.pendingStyles.titleFont" [fpWidth]="'320px'" [fpPosition]="'bottom'">
                 <button class="btn btn-danger">Font picker</button>
-                <span class="title-font-preview" *ngIf="title && titleFont"
-                      [ngStyle]="titleFont?.getStyles()">{{title}}</span>
+                <span class="title-font-preview" *ngIf="title && styleService.pendingStyles.titleFont"
+                      [ngStyle]="styleService.pendingStyles.titleFont?.getStyles()">{{title}}</span>
               </div>
             </div>
           </mat-tab>
         </mat-tab-group>
       </div>
       <div class="modal-footer">
-        <button mat-raised-button color="primary" data-dismiss="modal" (click)="applyStyles()">Apply</button>
-        <button mat-raised-button color="accent" data-dismiss="modal" (click)="cancelStyles()">Cancel</button>
-        <button mat-raised-button color="warn" (click)="resetStyles()">Reset</button>
+        <button mat-raised-button color="primary" data-dismiss="modal" (click)="styleService.applyStyles()">Apply</button>
+        <button mat-raised-button color="accent" data-dismiss="modal" (click)="styleService.cancelStyles()">Cancel</button>
+        <button mat-raised-button color="warn" (click)="styleService.resetStyles()">Reset</button>
       </div>
     </div>
   </div>

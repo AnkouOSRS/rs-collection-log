@@ -5,8 +5,6 @@ import {Category} from "../../models/category";
 import {DefaultCategories} from "../../constants/default-categories";
 import html2canvas from "html2canvas";
 import {StyleService} from "../../services/style.service";
-import {DefaultStyles} from "../../constants/default-styles";
-import {Font} from "ngx-font-picker";
 import {SearchErrorStateMatcher} from "../../matchers/search-error-state-matcher";
 import {FormControl, Validators} from "@angular/forms";
 import {MatSnackBar} from "@angular/material";
@@ -57,35 +55,6 @@ export class MainComponent implements OnInit {
     Validators.required
   ]);
 
-  editing: boolean = false;
-
-  // Styles pending being applied
-  backgroundUrl = DefaultStyles.DEFAULT_BACKGROUND_URL;
-  cardColor = DefaultStyles.DEFAULT_CARD_COLOR;
-  cardHeaderColor = DefaultStyles.DEFAULT_CARD_HEADER_COLOR;
-  cardBorderColor = DefaultStyles.DEFAULT_CARD_BORDER_COLOR;
-  cardBorderWidth = DefaultStyles.DEFAULT_CARD_BORDER_WIDTH;
-  iconSize = DefaultStyles.DEFAULT_ICON_SIZE;
-  showKc = DefaultStyles.DEFAULT_SHOW_KC;
-  showQty = DefaultStyles.DEFAULT_SHOW_QTY;
-  titleFont = DefaultStyles.DEFAULT_TITLE_FONT;
-  bgOpacity = DefaultStyles.DEFAULT_BG_OPACITY;
-  showProgress = DefaultStyles.DEFAULT_SHOW_PROGRESS;
-  ironSize = DefaultStyles.DEFAULT_IRON_SIZE;
-  titleColor = DefaultStyles.DEFAULT_TITLE_COLOR;
-  headerColor = DefaultStyles.DEFAULT_HEADER_COLOR;
-  progressColor = DefaultStyles.DEFAULT_PROGRESS_COLOR;
-  lockedOpacity = DefaultStyles.DEFAULT_LOCKED_OPACITY;
-  bgColor = DefaultStyles.DEFAULT_BG_COLOR;
-  showCategoryKc = DefaultStyles.DEFAULT_SHOW_CATEGORY_KC;
-  categoryKcColor = DefaultStyles.DEFAULT_CATEGORY_KC_COLOR;
-  cardMargin = DefaultStyles.DEFAULT_CARD_MARGIN;
-  showQp = DefaultStyles.DEFAULT_SHOW_QP;
-  qpIconSize = DefaultStyles.DEFAULT_QP_ICON_SIZE;
-  showProgressBar = DefaultStyles.DEFAULT_SHOW_PROGRESS_BAR;
-  progressBarColor = DefaultStyles.DEFAULT_PROGRESS_BAR_COLOR;
-  fadeBg = DefaultStyles.DEFAULT_FADE_BG;
-
   constructor(private http: HttpClient, private elementRef: ElementRef, private renderer: Renderer2,
               public styleService: StyleService, private _snackbar: MatSnackBar) {
 
@@ -104,9 +73,6 @@ export class MainComponent implements OnInit {
       console.error('Error while retrieving item data from OSRS Box API');
       console.error(error);
     });
-    if (localStorage.getItem('styles')) {
-      this.loadStylesFromLocalStorage();
-    }
   }
 
   loadFromLocalStorage() {
@@ -128,10 +94,6 @@ export class MainComponent implements OnInit {
 
   scrollToTop() {
     window.scroll(0,0);
-  }
-
-  saveItemInfo() {
-    this.saveCategories();
   }
 
   incrementIronmanType() {
@@ -195,17 +157,16 @@ export class MainComponent implements OnInit {
     this._snackbar.open('Categories export code has been copied to clipboard', 'Dismiss', {duration: 5000});
   }
 
-  swapInArray(array: any[], index1: number, index2: number) {
-    let temp = array[index1];
-    array[index1] = array[index2];
-    array[index2] = temp;
+  showProgressBarWarning() {
+    // if (this.showProgressBar)
+    if (this.styleService.appliedStyles.showProgressBar)
+      this._snackbar.open('Progress bar may not display the correct progress in the exported screenshot.', 'Dismiss', {duration: 10000});
   }
 
   captureScreenshot() {
     this.toggleScreenshotHiddenElements(true);
-    html2canvas(document.body, {allowTaint: true, useCORS: true, backgroundColor: this.styleService.bgColor}).then(function (canvas) {
+    html2canvas(document.body, {allowTaint: true, useCORS: true, backgroundColor: this.styleService.appliedStyles.bgColor}).then(function (canvas) {
       let dataURI = canvas.toDataURL();
-      let blob = canvas.toBlob(()=>{}, 'image/png', 1);
       let a: HTMLAnchorElement = document.createElement('a') as HTMLAnchorElement;
       a.href = dataURI;
       a.download = 'diary-export.png';
@@ -213,7 +174,7 @@ export class MainComponent implements OnInit {
       a.click();
       window.URL.revokeObjectURL(dataURI);
       a.remove();
-      window.open().document.write('<img src="' + dataURI + '" alt="Exported image"/>');
+      // window.open().document.write('<img src="' + dataURI + '" alt="Exported image"/>');
     });
     this.toggleScreenshotHiddenElements(false);
   }
@@ -274,22 +235,6 @@ export class MainComponent implements OnInit {
     }
   }
 
-  moveItemUp(index: number, category: Category) {
-    if (index == 0)
-      return;
-    let temp = category.items[index - 1];
-    category.items[index - 1] = category.items[index];
-    category.items[index] = temp;
-  }
-
-  moveItemDown(index: number, category: Category) {
-    if (index == category.items.length - 1)
-      return;
-    let temp = category.items[index + 1];
-    category.items[index + 1] = category.items[index];
-    category.items[index] = temp;
-  }
-
   removeItem(category: Category, itemToRemove: Item) {
     category.items = category.items.filter(item => item != itemToRemove);
     this.saveCategories();
@@ -305,131 +250,12 @@ export class MainComponent implements OnInit {
 
   getCategoryTitleWidth(name) {
     if (!name)
-      return {width: '1ch', color: this.headerColor};
-    return {width: (name.length + 2) + "ch", color: this.headerColor};
+      return {width: '1ch', color: this.styleService.appliedStyles.headerColor};
+    return {width: (name.length + 2) + "ch", color: this.styleService.appliedStyles.headerColor};
   }
 
   bgUploaded(event) {
-    this.backgroundUrl = URL.createObjectURL(event.target.files[0]);
-  }
-
-  applyStyles() {
-    this.styleService.backgroundImageUrl = this.backgroundUrl;
-    this.styleService.cardColor = this.cardColor;
-    this.styleService.cardHeaderColor = this.cardHeaderColor;
-    this.styleService.cardBorderColor = this.cardBorderColor;
-    this.styleService.cardBorderWidth = this.cardBorderWidth;
-    this.styleService.iconSize = this.iconSize;
-    this.styleService.showKc = this.showKc;
-    this.styleService.showQty = this.showQty;
-    this.styleService.bgOpacity = this.bgOpacity;
-    this.styleService.showProgress = this.showProgress;
-    this.styleService.ironSize = this.ironSize;
-    this.styleService.titleColor = this.titleColor;
-    this.styleService.headerColor = this.headerColor;
-    this.styleService.progressColor = this.progressColor;
-    this.styleService.lockedOpacity = this.lockedOpacity;
-    this.styleService.bgColor = this.bgColor;
-    this.styleService.categoryKcColor = this.categoryKcColor;
-    this.styleService.showCategoryKc = this.showCategoryKc;
-    this.styleService.cardMargin = this.cardMargin;
-    this.styleService.qpIconSize = this.qpIconSize;
-    this.styleService.showQp = this.showQp;
-    this.styleService.titleFont = this.titleFont;
-    this.styleService.progressBarColor = this.progressBarColor;
-    this.styleService.showProgressBar = this.showProgressBar;
-    this.styleService.fadeBg = this.fadeBg;
-    this.styleService.applyStyles();
-  }
-
-  resetStyles() {
-    this.backgroundUrl = DefaultStyles.DEFAULT_BACKGROUND_URL;
-    this.cardColor = DefaultStyles.DEFAULT_CARD_COLOR;
-    this.cardHeaderColor = DefaultStyles.DEFAULT_CARD_HEADER_COLOR;
-    this.cardBorderColor = DefaultStyles.DEFAULT_CARD_BORDER_COLOR;
-    this.cardBorderWidth = DefaultStyles.DEFAULT_CARD_BORDER_WIDTH;
-    this.iconSize = 50;
-    this.showKc = DefaultStyles.DEFAULT_SHOW_KC;
-    this.showQty = DefaultStyles.DEFAULT_SHOW_QTY;
-    this.bgOpacity = DefaultStyles.DEFAULT_BG_OPACITY;
-    this.showProgress = DefaultStyles.DEFAULT_SHOW_PROGRESS;
-    this.ironSize = DefaultStyles.DEFAULT_IRON_SIZE;
-    this.titleColor = DefaultStyles.DEFAULT_TITLE_COLOR;
-    this.headerColor = DefaultStyles.DEFAULT_HEADER_COLOR;
-    this.progressColor = DefaultStyles.DEFAULT_PROGRESS_COLOR;
-    this.lockedOpacity = DefaultStyles.DEFAULT_LOCKED_OPACITY;
-    this.bgColor = DefaultStyles.DEFAULT_BG_COLOR;
-    this.categoryKcColor = DefaultStyles.DEFAULT_CATEGORY_KC_COLOR;
-    this.showCategoryKc = DefaultStyles.DEFAULT_SHOW_CATEGORY_KC;
-    this.cardMargin = DefaultStyles.DEFAULT_CARD_MARGIN;
-    this.qpIconSize = DefaultStyles.DEFAULT_QP_ICON_SIZE;
-    this.showQp = DefaultStyles.DEFAULT_SHOW_QP;
-    this.titleFont = DefaultStyles.DEFAULT_TITLE_FONT;
-    this.showProgressBar = DefaultStyles.DEFAULT_SHOW_PROGRESS_BAR;
-    this.progressBarColor = DefaultStyles.DEFAULT_PROGRESS_BAR_COLOR;
-    this.fadeBg = DefaultStyles.DEFAULT_FADE_BG;
-
-    let bgUpload = this.elementRef.nativeElement.querySelectorAll('#bg-upload');
-    if (bgUpload[0]) {
-      bgUpload[0].value = '';
-    }
-  }
-
-  cancelStyles() {
-    this.backgroundUrl = this.styleService.backgroundImageUrl;
-    this.cardColor = this.styleService.cardColor;
-    this.cardHeaderColor = this.styleService.cardHeaderColor;
-    this.cardBorderColor = this.styleService.cardBorderColor;
-    this.cardBorderWidth = this.styleService.cardBorderWidth;
-    this.iconSize = this.styleService.iconSize;
-    this.showKc = this.styleService.showKc;
-    this.showQty = this.styleService.showQty;
-    this.bgOpacity = this.styleService.bgOpacity;
-    this.showProgress = this.styleService.showProgress;
-    this.ironSize = this.styleService.ironSize;
-    this.titleColor = this.styleService.titleColor;
-    this.headerColor = this.styleService.headerColor;
-    this.progressColor = this.styleService.progressColor;
-    this.lockedOpacity = this.styleService.lockedOpacity;
-    this.bgColor = this.styleService.bgColor;
-    this.categoryKcColor = this.styleService.categoryKcColor;
-    this.showCategoryKc = this.styleService.showCategoryKc;
-    this.cardMargin = this.styleService.cardMargin;
-    this.qpIconSize = this.styleService.qpIconSize;
-    this.showQp = this.styleService.showQp;
-    this.titleFont = this.styleService.titleFont;
-    this.showProgressBar = this.styleService.showProgressBar;
-    this.progressBarColor = this.styleService.progressBarColor;
-    this.fadeBg = this.styleService.fadeBg;
-  }
-
-  loadStylesFromLocalStorage() {
-    let styleObj = JSON.parse(localStorage.getItem('styles'));
-    this.backgroundUrl = styleObj['backgroundImageUrl'];
-    this.cardColor = styleObj['cardColor'];
-    this.cardHeaderColor = styleObj['cardHeaderColor'];
-    this.cardBorderColor = styleObj['cardBorderColor'];
-    this.cardBorderWidth = styleObj['cardBorderWidth'];
-    this.iconSize = styleObj['iconSize'];
-    this.showKc = styleObj['showKc'];
-    this.showQty = styleObj['showQty'];
-    this.bgOpacity = styleObj['bgOpacity'];
-    this.showProgress = styleObj['showProgress'];
-    this.ironSize = styleObj['ironSize'];
-    this.titleColor = styleObj['titleColor'];
-    this.headerColor = styleObj['headerColor'];
-    this.progressColor = styleObj['progressColor'];
-    this.lockedOpacity = styleObj['lockedOpacity'];
-    this.bgColor = styleObj['bgColor'];
-    this.categoryKcColor = styleObj['categoryKcColor'];
-    this.showCategoryKc = styleObj['showCategoryKc'];
-    this.cardMargin = styleObj['cardMargin'];
-    this.showQp = styleObj['showQp'];
-    this.qpIconSize = styleObj['qpIconSize'];
-    this.titleFont = new Font(styleObj['titleFont']);
-    this.showProgressBar = this.styleService.showProgressBar;
-    this.progressBarColor = this.styleService.progressBarColor;
-    this.fadeBg = this.styleService.fadeBg;
+    this.styleService.pendingStyles.backgroundImageUrl = URL.createObjectURL(event.target.files[0]);
   }
 
   getUnlockedItemsCount(items: Item[]) {
@@ -447,14 +273,14 @@ export class MainComponent implements OnInit {
     return {
       'position': 'absolute',
       'top': 0,
-      'left': (this.styleService.iconSize) + 'px'
+      'left': (this.styleService.appliedStyles.iconSize) + 'px'
     };
   }
 
   getItemKcStyles() {
     return {
       'position': 'absolute',
-      'top': (this.styleService.iconSize / 50 * 20) + 'px',
+      'top': (this.styleService.appliedStyles.iconSize / 50 * 20) + 'px',
       'left': 0
     };
   }
@@ -479,13 +305,6 @@ export class MainComponent implements OnInit {
     return (unlocked/total)*100;
   }
 
-  getDimensionControlWidth(text) {
-    if (!text) {
-      return 3;
-    }
-    return (text.toString().length + 2);
-  }
-
   reset() {
     this.categories = DefaultCategories.DEFAULT_CATEGORIES;
     this.selectedCategoryName = '';
@@ -506,30 +325,6 @@ export class MainComponent implements OnInit {
       }
     });
     this.saveCategories();
-  }
-
-  getFirstValidCategory(): Category {
-    let result: Category = new Category();
-    this.categories.forEach(category => {
-      if (category && category.name && category.name != '') {
-        result = category;
-      }
-    });
-    console.log('first valid category was: ' + result.name);
-    return result;
-  }
-
-  shouldBreakLine(index: number, category: Category) {
-    let multiple = Number.isInteger((index+1) / category.x);
-    return multiple;
-  }
-
-  toggleEditMode() {
-    this.editing = !this.editing;
-  }
-
-  printCategories() {
-    console.log(JSON.stringify(this.categories));
   }
 
   toggleItemUnlocked(item: Item, category: Category) {
@@ -586,5 +381,11 @@ export class MainComponent implements OnInit {
     }
     window.scroll(0, document.body.scrollHeight);
     this.saveCategories();
+  }
+
+  swapInArray(array: any[], index1: number, index2: number) {
+    let temp = array[index1];
+    array[index1] = array[index2];
+    array[index2] = temp;
   }
 }
