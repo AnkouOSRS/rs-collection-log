@@ -112,6 +112,11 @@ export class MainComponent implements OnInit {
         this.selectedProfileName = this.profiles[selectedIndex].name;
       }
     }
+    this.profiles.filter(profile => {
+      if (profile.name === this.selectedProfileName) {
+        this.selectedProfile = profile;
+      }
+    });
   }
 
   scrollToTop() {
