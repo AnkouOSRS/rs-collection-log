@@ -8,6 +8,7 @@ import {StyleService} from "../../services/style.service";
 import {SearchErrorStateMatcher} from "../../matchers/search-error-state-matcher";
 import {FormControl, Validators} from "@angular/forms";
 import {MatSnackBar} from "@angular/material";
+import {Profile} from "../../models/profile";
 
 @Component({
   selector: 'app-main',
@@ -18,10 +19,15 @@ export class MainComponent implements OnInit {
   apiUrl = 'https://www.osrsbox.com/osrsbox-db/items-complete.json';
   itemData;
   title = 'Collection Log';
-  ironmanType: number = -1; // -1 -> first time user,  0 -> none, 1 -> hcim, 2 -> regular, 3 -> uim
+  ironmanType: number = -1; // -1 -> first time user, 0 -> im, 1 -> hcim, 2 -> uim, 3 -> main
   qp = '0';
-
   categories: Category[] = [];
+
+  profiles: Profile[];
+  selectedProfile: Profile;
+  selectedProfileName: string;
+  modalProfileInput: string = '';
+
   categoryBeingRemoved: Category;
 
   searchResults: Item[] = [];
@@ -34,7 +40,7 @@ export class MainComponent implements OnInit {
   defaultCategories: Category[] = DefaultCategories.DEFAULT_CATEGORIES;
   defaultCategorySelectedInModal = '';
   addCategorySelectedTab = 0; // 0 - new, 1 - default
-  categoryImportInput = '';
+  profileImportInput = '';
 
   isAddCollapsed = true;
   isItemSearchCollapsed = true;
@@ -54,16 +60,26 @@ export class MainComponent implements OnInit {
   addNewCategoryFormControl = new FormControl('', [
     Validators.required
   ]);
+  addNewProfileFormControl = new FormControl('', [
+    Validators.required
+  ]);
 
   constructor(private http: HttpClient, private elementRef: ElementRef, private renderer: Renderer2,
               public styleService: StyleService, private _snackbar: MatSnackBar) {
-
+    this.profiles = [DefaultCategories.DEFAULT_PROFILE];
+    this.selectedProfile = this.profiles[0];
+    this.selectedProfileName = this.selectedProfile.name;
   }
 
   ngOnInit() {
+    // localStorage.clear();
     this.loadFromLocalStorage();
     if (this.categories && this.categories.length != 0) {
       this.selectedCategoryName = this.categories[0].name;
+    }
+    if (this.profiles != null && this.selectedProfile == null && this.selectedProfileName == null) {
+      this.selectedProfile = this.profiles[0];
+      this.selectedProfileName = this.selectedProfile.name;
     }
     this.http.get(this.apiUrl).subscribe(res => {
       if (!res || res === '')
@@ -73,23 +89,34 @@ export class MainComponent implements OnInit {
       console.error('Error while retrieving item data from OSRS Box API');
       console.error(error);
     });
+    // this.profiles.push({name: 'Ankou btw', categories: DefaultCategories.DEFAULT_CATEGORIES, ironmanType: -1, qp: '0'});
   }
 
   loadFromLocalStorage() {
-    if (localStorage.getItem('categories')) {
-      this.categories = JSON.parse(localStorage.getItem('categories'));
+    if (localStorage.getItem('profiles') != null) {
+      this.profiles = JSON.parse(localStorage.getItem('profiles'));
     } else {
-      this.categories = DefaultCategories.DEFAULT_CATEGORIES;
+      let defaultProfile: Profile;
+        defaultProfile = {
+          name: 'Collection Log',
+          categories: ((localStorage.getItem('categories') != null ? JSON.parse(localStorage.getItem('categories')) : DefaultCategories.DEFAULT_CATEGORIES)),
+          ironmanType: ((localStorage.getItem('ironmanType') != null ? JSON.parse(localStorage.getItem('ironmanType')) : -1)),
+          qp: ((localStorage.getItem('qp') != null ? JSON.parse(localStorage.getItem('qp')) : 0))
+        };
+        this.profiles = [defaultProfile];
     }
-    if (localStorage.getItem('title')) {
-      this.title = localStorage.getItem('title');
+    if (localStorage.getItem('selectedProfile') != null) {
+      let selectedIndex = Number(localStorage.getItem('selectedProfile'));
+      if (this.profiles.length >= selectedIndex && this.profiles[selectedIndex] != null) {
+        this.selectedProfile = this.profiles[selectedIndex];
+        this.selectedProfileName = this.profiles[selectedIndex].name;
+      }
     }
-    if (localStorage.getItem('ironmanType')) {
-      this.ironmanType = Number(localStorage.getItem('ironmanType'));
-    }
-    if (localStorage.getItem('qp')) {
-      this.qp = localStorage.getItem('qp');
-    }
+    this.profiles.filter(profile => {
+      if (profile.name === this.selectedProfileName) {
+        this.selectedProfile = profile;
+      }
+    });
   }
 
   scrollToTop() {
@@ -97,24 +124,20 @@ export class MainComponent implements OnInit {
   }
 
   incrementIronmanType() {
-    if(this.ironmanType == 3) {
-      this.ironmanType = 0;
+    if(this.selectedProfile.ironmanType == 3) {
+      this.selectedProfile.ironmanType = 0;
     } else {
-      this.ironmanType++;
+      this.selectedProfile.ironmanType++;
     }
-    localStorage.setItem('ironmanType', this.ironmanType.toString());
-  }
-
-  saveTitle() {
-    localStorage.setItem('title', this.title);
+    this.saveProfiles();
   }
 
   saveQp() {
-    if (Number(this.qp) > 275)
-      this.qp = '275';
-    if (Number(this.qp) < 0)
-      this.qp = '0';
-    localStorage.setItem('qp', this.qp);
+    if (Number(this.selectedProfile.qp) > 275)
+      this.selectedProfile.qp = '275';
+    if (Number(this.selectedProfile.qp) < 0)
+      this.selectedProfile.qp = '0';
+    this.saveProfiles();
   }
 
   toggleCategoryLocked(category: Category) {
@@ -132,34 +155,34 @@ export class MainComponent implements OnInit {
     }
   }
 
-  getCategoryJSON(): string {
-    return JSON.stringify(this.categories);
+  getProfileJSON(): string {
+    return JSON.stringify(this.selectedProfile);
   }
 
-  applyCategoryImport() {
-    if (this.categoryImportInput == null || this.categoryImportInput == '')
+  deleteProfile() {
+    if (this.profiles.length == 0)
       return;
-    try {
-      let categories: Category[] = JSON.parse(this.categoryImportInput);
-      if (categories != null) {
-        this.categories = categories;
-        this.saveCategories();
-      }
+    if (this.profiles.length == 1) {
+      this.selectedProfile = DefaultCategories.DEFAULT_PROFILE;
+    } else {
+      this.profiles = this.profiles.filter(profile => {
+        if (profile == this.selectedProfile) {
+          return false;
+        }
+        return true;
+      });
     }
-    catch(error) {
-      alert('An error occurred while importing the categories. Please check that you have pasted the correct code');
-      console.error(error);
-    }
-    this.categoryImportInput = '';
+    this.selectedProfile = this.profiles[0];
+    this.selectedProfileName = this.profiles[0].name;
+    this.saveProfiles();
   }
 
   showClipboardSuccess() {
-    this._snackbar.open('Categories export code has been copied to clipboard', 'Dismiss', {duration: 5000});
+    this._snackbar.open('Profile export code has been copied to clipboard', 'Dismiss', {duration: 5000});
   }
 
   showProgressBarWarning() {
-    // if (this.showProgressBar)
-    if (this.styleService.appliedStyles.showProgressBar)
+    if (this.styleService.pendingStyles.showProgressBar)
       this._snackbar.open('Progress bar may not display the correct progress in the exported screenshot.', 'Dismiss', {duration: 10000});
   }
 
@@ -209,28 +232,28 @@ export class MainComponent implements OnInit {
   moveCategoryUp(index: number) {
     if (index === 0)
       return;
-    let currentCategory = this.categories[index];
-    if (this.categories[index - 1]) {
-      let temp = this.categories[index - 1];
-      this.categories[index - 1] = currentCategory;
-      this.categories[index] = temp;
+    let currentCategory = this.selectedProfile.categories[index];
+    if (this.selectedProfile.categories[index - 1]) {
+      let temp = this.selectedProfile.categories[index - 1];
+      this.selectedProfile.categories[index - 1] = currentCategory;
+      this.selectedProfile.categories[index] = temp;
     }
   }
 
   moveCategoryDown(index: number) {
-    if (index === this.categories.length - 1)
+    if (index === this.selectedProfile.categories.length - 1)
       return;
-    let currentCategory = this.categories[index];
-    if (this.categories[index + 1]) {
-      let temp = this.categories[index + 1];
-      this.categories[index + 1] = currentCategory;
-      this.categories[index] = temp;
+    let currentCategory = this.selectedProfile.categories[index];
+    if (this.selectedProfile.categories[index + 1]) {
+      let temp = this.selectedProfile.categories[index + 1];
+      this.selectedProfile.categories[index + 1] = currentCategory;
+      this.selectedProfile.categories[index] = temp;
     }
   }
 
   removeItem(category: Category, itemToRemove: Item) {
     category.items = category.items.filter(item => item != itemToRemove);
-    this.saveCategories();
+    this.saveProfiles();
   }
 
   toggleEditingCategory(categoryToToggle: Category) {
@@ -266,7 +289,8 @@ export class MainComponent implements OnInit {
     return {
       'position': 'absolute',
       'top': 0,
-      'left': (this.styleService.appliedStyles.iconSize) + 'px'
+      'left': (this.styleService.appliedStyles.iconSize) + 'px',
+      'z-index': 88888
     };
   }
 
@@ -274,7 +298,8 @@ export class MainComponent implements OnInit {
     return {
       'position': 'absolute',
       'top': (this.styleService.appliedStyles.iconSize / 50 * 20) + 'px',
-      'left': 0
+      'left': 0,
+      'z-index': 88888
     };
   }
 
@@ -299,25 +324,86 @@ export class MainComponent implements OnInit {
   }
 
   reset() {
-    this.categories = DefaultCategories.DEFAULT_CATEGORIES;
-    this.selectedCategoryName = '';
-    this.saveCategories();
+    this.profiles.filter(profile => {
+      if (profile == this.selectedProfile) {
+        profile.categories = DefaultCategories.DEFAULT_PROFILE.categories;
+        profile.ironmanType = DefaultCategories.DEFAULT_PROFILE.ironmanType;
+        profile.name = DefaultCategories.DEFAULT_PROFILE.name;
+        profile.qp = DefaultCategories.DEFAULT_PROFILE.qp;
+      }
+    });
+    this.saveProfiles();
   }
 
-  saveCategories() {
-    localStorage.setItem('categories', JSON.stringify(this.categories));
+  saveProfiles() {
+    localStorage.setItem('profiles', JSON.stringify(this.profiles));
+  }
+
+  setSelectedProfile() {
+    this.profiles.filter(profile => {
+      if (profile.name === this.selectedProfileName) {
+        this.selectedProfile = profile;
+      }
+    });
+    localStorage.setItem('selectedProfile', '' + this.profiles.indexOf(this.selectedProfile));
+  }
+
+  addProfile() {
+    let name = this.modalProfileInput;
+    this.profiles.filter(profile => {
+      if (profile.name === name) {
+        this._snackbar.open('You already have a profile with this name!', 'Dismiss', {duration: 5000});
+      }
+    });
+    let profile = {name: this.modalProfileInput, categories: DefaultCategories.DEFAULT_CATEGORIES, qp: '0', ironmanType: -1};
+    this.profiles.push(profile);
+    this.selectedProfile = this.profiles[this.profiles.length - 1];
+    this.selectedProfileName = this.profiles[this.profiles.length - 1].name;
+    this.saveProfiles();
+  }
+
+  importProfile() {
+    let newProfile: Profile;
+    try {
+      newProfile = JSON.parse(this.profileImportInput);
+    } catch (error) {
+      this._snackbar.open('There was an error importing this profile. Make sure you copied the correct code!',
+        'Dismiss', {duration: 5000});
+      return;
+    }
+    let shouldAdd = true;
+    this.profiles.forEach(profile => {
+      if (profile.name === newProfile.name)
+        shouldAdd = false;
+    });
+    if (shouldAdd) {
+      this.profiles.push(newProfile);
+      this.selectedProfile = newProfile;
+      this.selectedProfileName = newProfile.name;
+      this.saveProfiles();
+    } else {
+      this._snackbar.open('You already have a profile with this name!', 'Dismiss', {duration: 5000});
+    }
   }
 
   addItemToCategory(item: Item) {
-    if (this.searchFormControl.hasError('required') || this.categories.length === 0)
+    if (this.searchFormControl.hasError('required') || this.selectedProfile.categories.length === 0)
       return;
 
-    this.categories.filter(category => {
+    this.selectedProfile.categories.filter(category => {
       if (category.name === this.selectedCategoryName) {
         category.items.push(item);
       }
     });
-    this.saveCategories();
+    this.saveProfiles();
+  }
+
+  getFillerIconStyles() {
+    console.log(this.styleService.appliedStyles.iconSize);
+    let iconWidth = this.styleService.appliedStyles.iconSize;
+    return {'width.px': iconWidth,
+      'height.px': ((iconWidth / 50) * 44.44),
+      margin: '5px'}
   }
 
   toggleItemUnlocked(item: Item, category: Category) {
@@ -327,7 +413,7 @@ export class MainComponent implements OnInit {
       let matches = item.name.match(regex);
 
       if (!matches) {
-        this.saveCategories();
+        this.saveProfiles();
         return;
       }
 
@@ -347,7 +433,7 @@ export class MainComponent implements OnInit {
           }
         });
       }
-    this.saveCategories();
+    this.saveProfiles();
   }
 
   removeCategory(categoryToRemove: Category) {
@@ -357,23 +443,23 @@ export class MainComponent implements OnInit {
       this.searchFormControl.setErrors({'required': true});
     }
     this.categories = this.categories.filter(category => category != categoryToRemove);
-    this.saveCategories();
+    this.saveProfiles();
   }
 
   addCategory() {
     if (this.addCategorySelectedTab === 0) {
-      this.categories.push({name: this.modalCategoryInput, items: [], locked: false});
+      this.selectedProfile.categories.push({name: this.modalCategoryInput, items: [], locked: false});
     } else if (this.addCategorySelectedTab === 1) {
       if (!this.defaultCategorySelectedInModal || this.defaultCategorySelectedInModal === '')
         return;
       DefaultCategories.DEFAULT_CATEGORIES.filter(category => {
         if (category.name === this.defaultCategorySelectedInModal) {
-          this.categories.push(category);
+          this.selectedProfile.categories.push(category);
         }
       });
     }
     window.scroll(0, document.body.scrollHeight);
-    this.saveCategories();
+    this.saveProfiles();
   }
 
   swapInArray(array: any[], index1: number, index2: number) {

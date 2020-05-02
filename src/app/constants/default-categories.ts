@@ -1,4 +1,5 @@
 import {Category} from "../models/category";
+import {Profile} from "../models/profile";
 
 export class DefaultCategories {
   public static readonly TOB: Category = {
@@ -1380,5 +1381,7 @@ export class DefaultCategories {
     DefaultCategories.DIARIES,
     DefaultCategories.REVS,
   ];
+
+  public static readonly DEFAULT_PROFILE: Profile = {name: 'Collection Log', categories: DefaultCategories.DEFAULT_CATEGORIES, ironmanType: -1, qp: '0'};
 }
 

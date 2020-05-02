@@ -1,34 +1,49 @@
 <div class="container-fluid main-container" [ngStyle]="styleService.getBgStyle()">
 
-  <div class="qp-div" [ngClass]="(qp == null || qp == '' || qp == '0' ? 'ss-hide' : '')" *ngIf="styleService.appliedStyles.showQp" [ngStyle]="{top: (65 - (styleService.appliedStyles.qpIconSize - 50)) + 'px'}">
+  <div class="qp-div" [ngClass]="(selectedProfile.qp == null || selectedProfile.qp == '' || selectedProfile.qp == '0' ? 'ss-hide' : '')"
+       *ngIf="styleService.appliedStyles.showQp" [ngStyle]="{top: (65 - (styleService.appliedStyles.qpIconSize - 50)) + 'px'}">
     <img [src]="'assets/qp.png'" [ngStyle]="{width: styleService.appliedStyles.qpIconSize + 'px'}">
     <mat-form-field appearance="none">
       <mat-label>Quest Points</mat-label>
       <input matInput type="number" class="qp-input" [min]="0" [max]="275" [ngStyle]="{width: '5ch'}"
-             [(ngModel)]="qp"
-             (keyup)="saveQp()">
+             [(ngModel)]="selectedProfile.qp"
+             (keyup)="saveQp()" (click)="saveQp()">
     </mat-form-field>
   </div>
 
   <div class="title-div">
     <span (click)="incrementIronmanType()" style="margin-right: 10px; cursor: pointer;">
+      <img class="iron-logo" [src]="'assets/im.png'" [ngStyle]="{width: styleService.appliedStyles.ironSize + 'px'}" alt="IM Logo"
+           *ngIf="selectedProfile.ironmanType === 0">
       <img class="iron-logo" [src]="'assets/hcim.png'" [ngStyle]="{width: styleService.appliedStyles.ironSize + 'px'}" alt="HCIM Logo"
-           *ngIf="ironmanType === 1">
-    <img class="iron-logo" [src]="'assets/im.png'" [ngStyle]="{width: styleService.appliedStyles.ironSize + 'px'}" alt="IM Logo"
-         *ngIf="ironmanType === 2">
+           *ngIf="selectedProfile.ironmanType === 1">
     <img class="iron-logo" [src]="'assets/uim.png'" [ngStyle]="{width: styleService.appliedStyles.ironSize + 'px'}" alt="UIM Logo"
-         *ngIf="ironmanType === 3">
-      <img class="iron-logo" [src]="'assets/main-icon.png'" [ngStyle]="{width: styleService.appliedStyles.ironSize + 'px'}"
-           *ngIf="ironmanType === -1" alt="Click to set Ironman status">
-      <img class="iron-logo" [src]="'assets/iron-filler.png'" [ngStyle]="{width: styleService.appliedStyles.ironSize + 'px'}"
-           *ngIf="ironmanType === 0" alt="Main">
+         *ngIf="selectedProfile.ironmanType === 2">
+      <img data-html2canvas-ignore class="iron-logo" [src]="'assets/main-icon.png'" [ngStyle]="{width: styleService.appliedStyles.ironSize + 'px'}"
+           *ngIf="selectedProfile.ironmanType === -1" alt="Click to set Ironman status">
+      <img data-html2canvas-ignore class="iron-logo" [src]="'assets/iron-filler.png'" [ngStyle]="{width: styleService.appliedStyles.ironSize + 'px'}"
+           *ngIf="selectedProfile.ironmanType === 3" alt="Main">
     </span>
     <span [ngStyle]="styleService.appliedStyles.titleFont?.getStyles()">
       <input type="text" class="title-input"
-             [ngStyle]="{width: (title.length) + 'ch', color: styleService.appliedStyles.titleColor}"
-             [(ngModel)]="title"
-             (keyup)="saveTitle()">
+             [ngStyle]="{width: (selectedProfile.name.length) + 'ch', color: styleService.appliedStyles.titleColor}"
+             [(ngModel)]="selectedProfile.name"
+             (keyup)="saveProfiles()">
     </span>
+
+    <div class="profile-input-wrapper">
+      <span class="material-icons" style="color: rgba(256,0,0,.75); cursor: pointer; margin-right: 5px"
+            data-toggle="modal" data-target="#deleteProfileModal">
+        clear
+      </span>
+    <mat-form-field>
+      <mat-label>Profile</mat-label>
+      <mat-select [(value)]="selectedProfileName">
+        <mat-option *ngFor="let profile of profiles" [value]="profile.name" (click)="setSelectedProfile()">{{profile.name}}</mat-option>
+      </mat-select>
+    </mat-form-field>
+    </div>
+
   </div>
   <div data-html2canvas-ignore class="collapse" id="itemSearchCollapse" [ngbCollapse]="isItemSearchCollapsed">
     <form class="item-search-form">
@@ -36,7 +51,7 @@
         <mat-label>Category</mat-label>
         <mat-select [formControl]="searchFormControl" [errorStateMatcher]="searchErrorStateMatcher"
                     [(value)]="selectedCategoryName">
-          <mat-option *ngFor="let category of categories" [value]="category.name">
+          <mat-option *ngFor="let category of selectedProfile.categories" [value]="category.name">
             {{category.name}}
           </mat-option>
         </mat-select>
@@ -65,7 +80,7 @@
   </div>
 
   <div class="container-fluid text-center card-columns" style="margin-bottom: 100px; padding-right: 40px;">
-    <span *ngFor="let category of categories; index as i;">
+    <span *ngFor="let category of selectedProfile.categories; index as i;">
       <div class="card card-category"
            [ngStyle]="{'background-color': styleService.appliedStyles.cardColor,
            'border': (styleService.appliedStyles.cardBorderWidth + 'px solid ' + styleService.appliedStyles.cardBorderColor), 'margin': styleService.appliedStyles.cardMargin + 'px'}">
@@ -80,7 +95,7 @@
         </span>
       </div>
 
-      <input class="category-title-input" [value]="category.name" [(ngModel)]="categories[i].name"
+      <input class="category-title-input" [value]="category.name" [(ngModel)]="selectedProfile.categories[i].name"
              [ngStyle]="getCategoryTitleWidth(category.name)">
       <br />
       <span *ngIf="styleService.appliedStyles.showCategoryKc && category.kc && category.kc > 0">{{category.kc}} kc </span>
@@ -101,7 +116,7 @@
             <mat-form-field>
               <mat-label>KC</mat-label>
               <input matInput type="number" class="dimension-control"
-                     [(ngModel)]="category.kc" (ngModelChange)="saveCategories()" min="0" max="999999">
+                     [(ngModel)]="category.kc" (ngModelChange)="saveProfiles()" min="0" max="999999">
             </mat-form-field>
 
         </div>
@@ -126,7 +141,7 @@
       </div>
       <div class="row">
         <div class="col">
-          <button mat-raised-button color="accent" (click)="category.items.push({id: null, name: '', unlocked: false}); saveCategories();">
+          <button mat-raised-button color="accent" (click)="category.items.push({id: null, name: '', unlocked: false}); saveProfiles();">
             Add Invisible Filler
           </button>
         </div>
@@ -146,7 +161,7 @@
              [title]="item.name + (item.kc ? '\nKC(s): ' + item.kc : '')"
              (click)="toggleItemUnlocked(item, category)" [ngClass]="!item.unlocked ? 'item-locked' : ''">
 
-        <img [src]="'assets/filler.png'" *ngIf="item.id == null" [ngStyle]="{width: styleService.appliedStyles.iconSize + 'px'}">
+        <img [src]="'assets/filler.png'" *ngIf="item.id == null" [ngStyle]="getFillerIconStyles()">
 
                 <span class="item-kc" [ngStyle]="getItemKcStyles()" *ngIf="item.kc && styleService.appliedStyles.showKc">
                   {{item.kc.substr(0, (item.kc.includes(',') ? item.kc.indexOf(',') : item.kc.length))}} kc
@@ -186,6 +201,9 @@
       <button mat-raised-button color="accent" data-toggle="modal" data-target="#addCategoryModal">
         Category
       </button>
+      <button mat-raised-button color="accent" data-toggle="modal" data-target="#addProfileModal">
+        Profile
+      </button>
     </div>
   </div>
 
@@ -210,14 +228,14 @@
         <span class="material-icons" style="color: #333;">insert_photo</span>
         Style settings
       </button>
-      <button mat-raised-button ngxClipboard color="accent" style="margin-left: 5px;" [cbContent]="getCategoryJSON()"
+      <button mat-raised-button ngxClipboard color="accent" style="margin-left: 5px;" [cbContent]="getProfileJSON()"
               (cbOnSuccess)="showClipboardSuccess()">
         <span class="material-icons" style="color: #333;">launch</span>
-        Export categories
+        Export profile
       </button>
       <button mat-raised-button color="accent" style="margin-left: 5px;" data-toggle="modal" data-target="#importModal">
         <span class="material-icons" style="color: #333;">input</span>
-        Import categories
+        Import profile
       </button>
     </div>
   </div>
@@ -233,19 +251,19 @@
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title">Import Categories</h5>
+        <h5 class="modal-title">Import Profile</h5>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button>
       </div>
       <div class="modal-body" style="color: white">
         <mat-form-field>
-          <mat-label>Categories code</mat-label>
-          <input matInput type="text" [(ngModel)]="categoryImportInput" style="color: white;">
+          <mat-label>Profile code</mat-label>
+          <input matInput type="text" [(ngModel)]="profileImportInput" style="color: white;">
         </mat-form-field>
       </div>
       <div class="modal-footer">
-        <button mat-raised-button color="warn" (click)="applyCategoryImport()" data-dismiss="modal">Apply</button>
+        <button mat-raised-button color="warn" (click)="importProfile()" data-dismiss="modal">Apply</button>
         <button mat-raised-button color="accent" data-dismiss="modal">Cancel</button>
       </div>
     </div>
@@ -449,6 +467,34 @@
   </div>
 </div>
 
+<div class="modal fade" id="addProfileModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Add Profile</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+            <mat-form-field>
+              <mat-label>Profile name</mat-label>
+              <input matInput id="profileName" [formControl]="addNewProfileFormControl" style="color: white;"
+                     [errorStateMatcher]="searchErrorStateMatcher" [(ngModel)]="modalProfileInput">
+              <mat-error *ngIf="addNewProfileFormControl.hasError('required')">Profile name is required!</mat-error>
+            </mat-form-field>
+      </div>
+      <div class="modal-footer">
+        <button mat-raised-button color="primary" (click)="addProfile()" data-dismiss="modal"
+                [disabled]="(addNewProfileFormControl.hasError('required'))">
+          Add Profile
+        </button>
+        <button mat-raised-button color="accent" data-dismiss="modal">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="modal fade" id="resetModal" tabindex="-1" role="dialog">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
@@ -463,6 +509,26 @@
       </div>
       <div class="modal-footer">
         <button mat-raised-button color="warn" (click)="reset()" data-dismiss="modal">Reset</button>
+        <button mat-raised-button color="accent" data-dismiss="modal">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="deleteProfileModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Delete Profile?</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body" style="color: white">
+        Are you sure you want to delete the profile: {{selectedProfile.name}}?
+      </div>
+      <div class="modal-footer">
+        <button mat-raised-button color="warn" (click)="deleteProfile()" data-dismiss="modal">Delete</button>
         <button mat-raised-button color="accent" data-dismiss="modal">Cancel</button>
       </div>
     </div>
@@ -492,7 +558,7 @@
   </div>
 </div>
 
-<div class="modal fade" id="itemInfoModal" tabindex="-1" role="dialog">
+<div class="modal fade" id="itemInfoModal" data-backdrop="static" tabindex="-1" role="dialog">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
@@ -523,7 +589,7 @@
         </span>
       </div>
       <div class="modal-footer">
-        <button mat-raised-button color="accent" data-dismiss="modal">Close</button>
+        <button mat-raised-button color="accent" data-dismiss="modal" (click)="saveProfiles()">Close</button>
       </div>
     </div>
   </div>
