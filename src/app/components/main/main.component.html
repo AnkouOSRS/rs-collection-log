@@ -19,15 +19,14 @@
            *ngIf="selectedProfile.ironmanType === 1">
     <img class="iron-logo" [src]="'assets/uim.png'" [ngStyle]="{width: styleService.appliedStyles.ironSize + 'px'}" alt="UIM Logo"
          *ngIf="selectedProfile.ironmanType === 2">
-      <img class="iron-logo" [src]="'assets/main-icon.png'" [ngStyle]="{width: styleService.appliedStyles.ironSize + 'px'}"
+      <img data-html2canvas-ignore class="iron-logo" [src]="'assets/main-icon.png'" [ngStyle]="{width: styleService.appliedStyles.ironSize + 'px'}"
            *ngIf="selectedProfile.ironmanType === -1" alt="Click to set Ironman status">
-      <img class="iron-logo" [src]="'assets/iron-filler.png'" [ngStyle]="{width: styleService.appliedStyles.ironSize + 'px'}"
+      <img data-html2canvas-ignore class="iron-logo" [src]="'assets/iron-filler.png'" [ngStyle]="{width: styleService.appliedStyles.ironSize + 'px'}"
            *ngIf="selectedProfile.ironmanType === 3" alt="Main">
     </span>
     <span [ngStyle]="styleService.appliedStyles.titleFont?.getStyles()">
       <input type="text" class="title-input"
-             [ngStyle]="{width: (selectedProfile.name.length) + 'ch', color: styleService.appliedStyles.titleColor,
-             'margin-right': (selectedProfile.ironmanType === 3 ? styleService.appliedStyles.ironSize + 'px' : 0)}"
+             [ngStyle]="{width: (selectedProfile.name.length) + 'ch', color: styleService.appliedStyles.titleColor}"
              [(ngModel)]="selectedProfile.name"
              (keyup)="saveProfiles()">
     </span>
@@ -162,7 +161,7 @@
              [title]="item.name + (item.kc ? '\nKC(s): ' + item.kc : '')"
              (click)="toggleItemUnlocked(item, category)" [ngClass]="!item.unlocked ? 'item-locked' : ''">
 
-        <img [src]="'assets/filler.png'" *ngIf="item.id == null" [ngStyle]="{width: styleService.appliedStyles.iconSize + 'px'}">
+        <img [src]="'assets/filler.png'" *ngIf="item.id == null" [ngStyle]="getFillerIconStyles()">
 
                 <span class="item-kc" [ngStyle]="getItemKcStyles()" *ngIf="item.kc && styleService.appliedStyles.showKc">
                   {{item.kc.substr(0, (item.kc.includes(',') ? item.kc.indexOf(',') : item.kc.length))}} kc
@@ -559,7 +558,7 @@
   </div>
 </div>
 
-<div class="modal fade" id="itemInfoModal" tabindex="-1" role="dialog">
+<div class="modal fade" id="itemInfoModal" data-backdrop="static" tabindex="-1" role="dialog">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
@@ -590,7 +589,7 @@
         </span>
       </div>
       <div class="modal-footer">
-        <button mat-raised-button color="accent" data-dismiss="modal">Close</button>
+        <button mat-raised-button color="accent" data-dismiss="modal" (click)="saveProfiles()">Close</button>
       </div>
     </div>
   </div>

@@ -66,7 +66,7 @@ export class MainComponent implements OnInit {
 
   constructor(private http: HttpClient, private elementRef: ElementRef, private renderer: Renderer2,
               public styleService: StyleService, private _snackbar: MatSnackBar) {
-    this.profiles = [{name: 'Collection Log', categories: DefaultCategories.DEFAULT_CATEGORIES, ironmanType: -1, qp: '0'}];
+    this.profiles = [DefaultCategories.DEFAULT_PROFILE];
     this.selectedProfile = this.profiles[0];
     this.selectedProfileName = this.selectedProfile.name;
   }
@@ -160,16 +160,18 @@ export class MainComponent implements OnInit {
   }
 
   deleteProfile() {
-    if (this.profiles.length <= 1) {
-      this._snackbar.open('You can\'t delete the only profile you have!', 'Dismiss', {duration: 5000});
+    if (this.profiles.length == 0)
       return;
+    if (this.profiles.length == 1) {
+      this.selectedProfile = DefaultCategories.DEFAULT_PROFILE;
+    } else {
+      this.profiles = this.profiles.filter(profile => {
+        if (profile == this.selectedProfile) {
+          return false;
+        }
+        return true;
+      });
     }
-    this.profiles = this.profiles.filter(profile => {
-      if (profile == this.selectedProfile) {
-        return false;
-      }
-      return true;
-    });
     this.selectedProfile = this.profiles[0];
     this.selectedProfileName = this.profiles[0].name;
     this.saveProfiles();
@@ -230,22 +232,22 @@ export class MainComponent implements OnInit {
   moveCategoryUp(index: number) {
     if (index === 0)
       return;
-    let currentCategory = this.categories[index];
-    if (this.categories[index - 1]) {
-      let temp = this.categories[index - 1];
-      this.categories[index - 1] = currentCategory;
-      this.categories[index] = temp;
+    let currentCategory = this.selectedProfile.categories[index];
+    if (this.selectedProfile.categories[index - 1]) {
+      let temp = this.selectedProfile.categories[index - 1];
+      this.selectedProfile.categories[index - 1] = currentCategory;
+      this.selectedProfile.categories[index] = temp;
     }
   }
 
   moveCategoryDown(index: number) {
-    if (index === this.categories.length - 1)
+    if (index === this.selectedProfile.categories.length - 1)
       return;
-    let currentCategory = this.categories[index];
-    if (this.categories[index + 1]) {
-      let temp = this.categories[index + 1];
-      this.categories[index + 1] = currentCategory;
-      this.categories[index] = temp;
+    let currentCategory = this.selectedProfile.categories[index];
+    if (this.selectedProfile.categories[index + 1]) {
+      let temp = this.selectedProfile.categories[index + 1];
+      this.selectedProfile.categories[index + 1] = currentCategory;
+      this.selectedProfile.categories[index] = temp;
     }
   }
 
@@ -287,7 +289,8 @@ export class MainComponent implements OnInit {
     return {
       'position': 'absolute',
       'top': 0,
-      'left': (this.styleService.appliedStyles.iconSize) + 'px'
+      'left': (this.styleService.appliedStyles.iconSize) + 'px',
+      'z-index': 88888
     };
   }
 
@@ -295,7 +298,8 @@ export class MainComponent implements OnInit {
     return {
       'position': 'absolute',
       'top': (this.styleService.appliedStyles.iconSize / 50 * 20) + 'px',
-      'left': 0
+      'left': 0,
+      'z-index': 88888
     };
   }
 
@@ -320,10 +324,14 @@ export class MainComponent implements OnInit {
   }
 
   reset() {
-    this.selectedProfile.categories = DefaultCategories.DEFAULT_CATEGORIES;
-    this.selectedCategoryName = '';
-    this.selectedProfile.ironmanType = -1;
-    this.selectedProfile.qp = '0';
+    this.profiles.filter(profile => {
+      if (profile == this.selectedProfile) {
+        profile.categories = DefaultCategories.DEFAULT_PROFILE.categories;
+        profile.ironmanType = DefaultCategories.DEFAULT_PROFILE.ironmanType;
+        profile.name = DefaultCategories.DEFAULT_PROFILE.name;
+        profile.qp = DefaultCategories.DEFAULT_PROFILE.qp;
+      }
+    });
     this.saveProfiles();
   }
 
@@ -388,6 +396,14 @@ export class MainComponent implements OnInit {
       }
     });
     this.saveProfiles();
+  }
+
+  getFillerIconStyles() {
+    console.log(this.styleService.appliedStyles.iconSize);
+    let iconWidth = this.styleService.appliedStyles.iconSize;
+    return {'width.px': iconWidth,
+      'height.px': ((iconWidth / 50) * 44.44),
+      margin: '5px'}
   }
 
   toggleItemUnlocked(item: Item, category: Category) {
