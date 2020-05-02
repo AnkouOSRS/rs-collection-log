@@ -35,7 +35,7 @@ body, html {
 }
 
 .add-item-category-collapse {
-  margin-bottom: 30px;
+  margin-bottom: 60px;
 }
 
 .main-container {
@@ -97,8 +97,14 @@ h1 {
   z-index: 99999 !important;
 }
 
-.mat-form-field-infix {
+.qp-div > .mat-form-field > .mat-form-field-wrapper > .mat-form-field-flex > .mat-form-field-infix {
   width: 100px !important;
+}
+
+.profile-input-wrapper {
+  position: absolute;
+  top: 20px;
+  right: 20px;
 }
 
 .move-category-div {
