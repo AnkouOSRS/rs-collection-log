@@ -442,7 +442,7 @@ export class MainComponent implements OnInit {
     if (this.selectedCategoryName === categoryToRemove.name) {
       this.searchFormControl.setErrors({'required': true});
     }
-    this.categories = this.categories.filter(category => category != categoryToRemove);
+    this.selectedProfile.categories = this.selectedProfile.categories.filter(category => category != categoryToRemove);
     this.saveProfiles();
   }
 
