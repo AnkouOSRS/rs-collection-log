@@ -1,0 +1,23 @@
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-xs-3" (click)="setProgress(1)" style="cursor: pointer">
+      <span *ngIf="progress > 0" class="material-icons accent">check_box</span>
+      <span *ngIf="progress <= 0" class="material-icons">check_box_outline_blank</span>
+    </div>
+
+    <div class="col-xs-3" (click)="setProgress(2)" style="cursor: pointer">
+      <span *ngIf="progress > 1" class="material-icons accent">check_box</span>
+      <span *ngIf="progress <= 1" class="material-icons">check_box_outline_blank</span>
+    </div>
+
+    <div class="col-xs-3" (click)="setProgress(3)" style="cursor: pointer">
+      <span *ngIf="progress > 2" class="material-icons accent">check_box</span>
+      <span *ngIf="progress <= 2" class="material-icons">check_box_outline_blank</span>
+    </div>
+
+    <div class="col-xs-3" (click)="setProgress(4)" style="cursor: pointer">
+      <span *ngIf="progress > 3" class="material-icons accent">check_box</span>
+      <span *ngIf="progress <= 3" class="material-icons">check_box_outline_blank</span>
+    </div>
+  </div>
+</div>

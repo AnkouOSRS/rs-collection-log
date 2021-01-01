@@ -1,0 +1,17 @@
+.row {
+  flex-wrap: nowrap;
+}
+
+.container-fluid {
+  margin-top: 30px;
+}
+
+.material-icons {
+  font-size: 16pt;
+}
+
+.material-icons:not(.accent) {
+  color: rgba(255,255,255,.33);
+}
+
+

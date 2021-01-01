@@ -10,7 +10,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import {DragDropModule} from "@angular/cdk/drag-drop";
 import {
   MatButtonModule,
-  MatGridListModule, MatInputModule, MatProgressBarModule, MatRadioModule,
+  MatGridListModule, MatInputModule, MatProgressBarModule, MatProgressSpinnerModule, MatRadioModule,
   MatSelectModule,
   MatSlideToggleModule, MatSnackBarModule,
   MatTabsModule
@@ -21,11 +21,15 @@ import 'hammerjs';
 import {ClipboardModule} from "ngx-clipboard";
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import {DEFAULT_FONT_PICKER_CONFIG} from "./config";
+import { DiaryEntryComponent } from './components/diary-entry/diary-entry.component';
+import { DiaryProgressBarComponent } from './components/diary-entry/diary-progress-bar/diary-progress-bar.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     MainComponent,
+    DiaryEntryComponent,
+    DiaryProgressBarComponent,
   ],
   imports: [
     BrowserModule,
@@ -46,6 +50,7 @@ import {DEFAULT_FONT_PICKER_CONFIG} from "./config";
     MatButtonModule,
     ClipboardModule,
     MatSnackBarModule,
+    MatProgressSpinnerModule,
     NgbModule,
   ],
   providers: [

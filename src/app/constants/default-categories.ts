@@ -1,5 +1,6 @@
 import {Category} from "../models/category";
 import {Profile} from "../models/profile";
+import {DiaryRegion} from "../models/diary-region";
 
 export class DefaultCategories {
   public static readonly TOB: Category = {
@@ -768,253 +769,6 @@ export class DefaultCategories {
     ],
   };
 
-  public static readonly DIARIES = {
-    "name": "Diaries",
-    locked: true,
-    "items": [
-      {
-        "id": 13121,
-        "name": "Ardougne cloak 1",
-        "unlocked": false
-      },
-      {
-        "id": 13122,
-        "name": "Ardougne cloak 2",
-        "unlocked": false
-      },
-      {
-        "id": 13123,
-        "name": "Ardougne cloak 3",
-        "unlocked": false
-      },
-      {
-        "id": 13124,
-        "name": "Ardougne cloak 4",
-        "unlocked": false
-      },
-      {
-        "id": 13133,
-        "name": "Desert amulet 1",
-        "unlocked": false
-      },
-      {
-        "id": 13134,
-        "name": "Desert amulet 2",
-        "unlocked": false
-      },
-      {
-        "id": 13135,
-        "name": "Desert amulet 3",
-        "unlocked": false
-      },
-      {
-        "id": 13136,
-        "name": "Desert amulet 4",
-        "unlocked": false
-      },
-      {
-        "id": 13117,
-        "name": "Falador shield 1",
-        "unlocked": false
-      },
-      {
-        "id": 13118,
-        "name": "Falador shield 2",
-        "unlocked": false
-      },
-      {
-        "id": 13119,
-        "name": "Falador shield 3",
-        "unlocked": false
-      },
-      {
-        "id": 13120,
-        "name": "Falador shield 4",
-        "unlocked": false
-      },
-      {
-        "id": 13129,
-        "name": "Fremennik sea boots 1",
-        "unlocked": false
-      },
-      {
-        "id": 13130,
-        "name": "Fremennik sea boots 2",
-        "unlocked": false
-      },
-      {
-        "id": 13131,
-        "name": "Fremennik sea boots 3",
-        "unlocked": false
-      },
-      {
-        "id": 13132,
-        "name": "Fremennik sea boots 4",
-        "unlocked": false
-      },
-      {
-        "id": 13137,
-        "name": "Kandarin headgear 1",
-        "unlocked": false
-      },
-      {
-        "id": 13138,
-        "name": "Kandarin headgear 2",
-        "unlocked": false
-      },
-      {
-        "id": 13139,
-        "name": "Kandarin headgear 3",
-        "unlocked": false
-      },
-      {
-        "id": 13140,
-        "name": "Kandarin headgear 4",
-        "unlocked": false
-      },
-      {
-        "id": 11136,
-        "name": "Karamja gloves 1",
-        "unlocked": false
-      },
-      {
-        "id": 11138,
-        "name": "Karamja gloves 2",
-        "unlocked": false
-      },
-      {
-        "id": 11140,
-        "name": "Karamja gloves 3",
-        "unlocked": false
-      },
-      {
-        "id": 13103,
-        "name": "Karamja gloves 4",
-        "unlocked": false
-      },
-      {
-        "id": 22941,
-        "name": "Rada's blessing 1",
-        "unlocked": false
-      },
-      {
-        "id": 22943,
-        "name": "Rada's blessing 2",
-        "unlocked": false
-      },
-      {
-        "id": 22945,
-        "name": "Rada's blessing 3",
-        "unlocked": false
-      },
-      {
-        "id": 22947,
-        "name": "Rada's blessing 4",
-        "unlocked": false
-      },
-      {
-        "id": 13125,
-        "name": "Explorer's ring 1",
-        "unlocked": false
-      },
-      {
-        "id": 13126,
-        "name": "Explorer's ring 2",
-        "unlocked": false
-      },
-      {
-        "id": 13127,
-        "name": "Explorer's ring 3",
-        "unlocked": false
-      },
-      {
-        "id": 13128,
-        "name": "Explorer's ring 4",
-        "unlocked": false
-      },
-      {
-        "id": 13112,
-        "name": "Morytania legs 1",
-        "unlocked": false
-      },
-      {
-        "id": 13113,
-        "name": "Morytania legs 2",
-        "unlocked": false
-      },
-      {
-        "id": 13114,
-        "name": "Morytania legs 3",
-        "unlocked": false
-      },
-      {
-        "id": 13115,
-        "name": "Morytania legs 4",
-        "unlocked": false
-      },
-      {
-        "id": 13104,
-        "name": "Varrock armour 1",
-        "unlocked": false
-      },
-      {
-        "id": 13105,
-        "name": "Varrock armour 2",
-        "unlocked": false
-      },
-      {
-        "id": 13106,
-        "name": "Varrock armour 3",
-        "unlocked": false
-      },
-      {
-        "id": 13107,
-        "name": "Varrock armour 4",
-        "unlocked": false
-      },
-      {
-        "id": 13141,
-        "name": "Western banner 1",
-        "unlocked": false
-      },
-      {
-        "id": 13142,
-        "name": "Western banner 2",
-        "unlocked": false
-      },
-      {
-        "id": 13143,
-        "name": "Western banner 3",
-        "unlocked": false
-      },
-      {
-        "id": 13144,
-        "name": "Western banner 4",
-        "unlocked": false
-      },
-      {
-        "id": 13108,
-        "name": "Wilderness sword 1",
-        "unlocked": false
-      },
-      {
-        "id": 13109,
-        "name": "Wilderness sword 2",
-        "unlocked": false
-      },
-      {
-        "id": 13110,
-        "name": "Wilderness sword 3",
-        "unlocked": false
-      },
-      {
-        "id": 13111,
-        "name": "Wilderness sword 4",
-        "unlocked": false
-      }
-    ],
-  };
-
   public static readonly DKS: Category = {
     "name": "DKs",
     locked: true,
@@ -1162,7 +916,11 @@ export class DefaultCategories {
       "id": 23064,
       "name": "Jar of chemicals",
       "unlocked": false
-    }],
+    }, {
+      "id": 22106,
+      "name": "Jar of decay",
+      "unlocked": false
+    }]
   };
 
   public static readonly CHAMP_SCROLLS: Category = {
@@ -1378,10 +1136,60 @@ export class DefaultCategories {
     DefaultCategories.CHAMP_SCROLLS,
     DefaultCategories.DKS,
     DefaultCategories.SKILLING,
-    DefaultCategories.DIARIES,
     DefaultCategories.REVS,
   ];
 
-  public static readonly DEFAULT_PROFILE: Profile = {name: 'Collection Log', categories: DefaultCategories.DEFAULT_CATEGORIES, ironmanType: -1, qp: '0'};
+  public static readonly DEFAULT_DIARIES: DiaryRegion[] = [
+    {
+      "name": "Ardougne",
+      "progress": 0
+    },
+    {
+      "name": "Desert",
+      "progress": 0
+    },
+    {
+      "name": "Falador",
+      "progress": 0
+    },
+    {
+      "name": "Fremmenik",
+      "progress": 0
+    },
+    {
+      "name": "Kandarin",
+      "progress": 0
+    },
+    {
+      "name": "Karamja",
+      "progress": 0
+    },
+    {
+      "name": "Kourend & Kebos",
+      "progress": 0
+    },
+    {
+      "name": "Lumbridge & Draynor",
+      "progress": 0
+    },
+    {
+      "name": "Morytania",
+      "progress": 0
+    },
+    {
+      "name": "Varrock",
+      "progress": 0
+    },
+    {
+      "name": "West. Prov.",
+      "progress": 0
+    },
+    {
+      "name": "Wilderness",
+      "progress": 0
+    }
+  ];
+
+  public static readonly DEFAULT_PROFILE: Profile = {name: 'Collection Log', categories: DefaultCategories.DEFAULT_CATEGORIES, ironmanType: -1, qp: '0', diaries: DefaultCategories.DEFAULT_DIARIES};
 }
 

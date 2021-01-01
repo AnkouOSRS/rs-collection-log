@@ -50,6 +50,8 @@ export class MainComponent implements OnInit {
   deletingItem: Item;
   categoryOfDeletingItem: Category;
 
+  taskbarExpanded = true;
+
   searchErrorStateMatcher = new SearchErrorStateMatcher();
   searchFormControl = new FormControl('', [
     Validators.required
@@ -72,7 +74,10 @@ export class MainComponent implements OnInit {
   }
 
   ngOnInit() {
-    // localStorage.clear();
+    if (undefined == this.selectedProfile.diaries || this.selectedProfile.diaries === []) {
+      this.selectedProfile.diaries = DefaultCategories.DEFAULT_DIARIES;
+      this.saveProfiles();
+    }
     this.loadFromLocalStorage();
     if (this.categories && this.categories.length != 0) {
       this.selectedCategoryName = this.categories[0].name;
@@ -89,7 +94,6 @@ export class MainComponent implements OnInit {
       console.error('Error while retrieving item data from OSRS Box API');
       console.error(error);
     });
-    // this.profiles.push({name: 'Ankou btw', categories: DefaultCategories.DEFAULT_CATEGORIES, ironmanType: -1, qp: '0'});
   }
 
   loadFromLocalStorage() {
@@ -97,13 +101,14 @@ export class MainComponent implements OnInit {
       this.profiles = JSON.parse(localStorage.getItem('profiles'));
     } else {
       let defaultProfile: Profile;
-        defaultProfile = {
-          name: 'Collection Log',
-          categories: ((localStorage.getItem('categories') != null ? JSON.parse(localStorage.getItem('categories')) : DefaultCategories.DEFAULT_CATEGORIES)),
-          ironmanType: ((localStorage.getItem('ironmanType') != null ? JSON.parse(localStorage.getItem('ironmanType')) : -1)),
-          qp: ((localStorage.getItem('qp') != null ? JSON.parse(localStorage.getItem('qp')) : 0))
-        };
-        this.profiles = [defaultProfile];
+      defaultProfile = {
+        name: 'Collection Log',
+        categories: ((localStorage.getItem('categories') != null ? JSON.parse(localStorage.getItem('categories')) : DefaultCategories.DEFAULT_CATEGORIES)),
+        ironmanType: ((localStorage.getItem('ironmanType') != null ? JSON.parse(localStorage.getItem('ironmanType')) : -1)),
+        qp: ((localStorage.getItem('qp') != null ? JSON.parse(localStorage.getItem('qp')) : 0)),
+        diaries: DefaultCategories.DEFAULT_DIARIES
+      };
+      this.profiles = [defaultProfile];
     }
     if (localStorage.getItem('selectedProfile') != null) {
       let selectedIndex = Number(localStorage.getItem('selectedProfile'));
@@ -120,11 +125,11 @@ export class MainComponent implements OnInit {
   }
 
   scrollToTop() {
-    window.scroll(0,0);
+    window.scroll(0, 0);
   }
 
   incrementIronmanType() {
-    if(this.selectedProfile.ironmanType == 3) {
+    if (this.selectedProfile.ironmanType == 3) {
       this.selectedProfile.ironmanType = 0;
     } else {
       this.selectedProfile.ironmanType++;
@@ -188,7 +193,11 @@ export class MainComponent implements OnInit {
 
   captureScreenshot() {
     this.toggleScreenshotHiddenElements(true);
-    html2canvas(document.body, {allowTaint: true, useCORS: true, backgroundColor: this.styleService.appliedStyles.bgColor}).then(function (canvas) {
+    html2canvas(document.body, {
+      allowTaint: true,
+      useCORS: true,
+      backgroundColor: this.styleService.appliedStyles.bgColor
+    }).then(function (canvas) {
       let dataURI = canvas.toDataURL();
       let a: HTMLAnchorElement = document.createElement('a') as HTMLAnchorElement;
       a.href = dataURI;
@@ -320,7 +329,7 @@ export class MainComponent implements OnInit {
       if (item.unlocked)
         unlocked++;
     });
-    return (unlocked/total)*100;
+    return (unlocked / total) * 100;
   }
 
   reset() {
@@ -355,7 +364,13 @@ export class MainComponent implements OnInit {
         this._snackbar.open('You already have a profile with this name!', 'Dismiss', {duration: 5000});
       }
     });
-    let profile = {name: this.modalProfileInput, categories: DefaultCategories.DEFAULT_CATEGORIES, qp: '0', ironmanType: -1};
+    let profile = {
+      name: this.modalProfileInput,
+      categories: DefaultCategories.DEFAULT_CATEGORIES,
+      qp: '0',
+      ironmanType: -1,
+      diaries: DefaultCategories.DEFAULT_DIARIES
+    };
     this.profiles.push(profile);
     this.selectedProfile = this.profiles[this.profiles.length - 1];
     this.selectedProfileName = this.profiles[this.profiles.length - 1].name;
@@ -401,38 +416,15 @@ export class MainComponent implements OnInit {
   getFillerIconStyles() {
     console.log(this.styleService.appliedStyles.iconSize);
     let iconWidth = this.styleService.appliedStyles.iconSize;
-    return {'width.px': iconWidth,
+    return {
+      'width.px': iconWidth,
       'height.px': ((iconWidth / 50) * 44.44),
-      margin: '5px'}
+      margin: '5px'
+    }
   }
 
   toggleItemUnlocked(item: Item, category: Category) {
-      item.unlocked = !item.unlocked;
-
-      let regex: RegExp = /^(Ardougne cloak|Desert amulet|Falador shield|Fremennik sea boots|Kandarin headgear|Karamja gloves|Rada's blessing|Explorer's ring|Morytania legs|Varrock armour|Western banner|Wilderness sword)(\s)(\d)$/i;
-      let matches = item.name.match(regex);
-
-      if (!matches) {
-        this.saveProfiles();
-        return;
-      }
-
-      if (matches && matches[1] && matches[3]) {
-        let diaryItem = matches[1];
-        let number = matches[3];
-        category.items.filter(itemInObj => {
-          let categoryRegex = new RegExp(diaryItem, "i");
-          let categoryItemMatches = itemInObj.name.match(categoryRegex);
-          if (categoryItemMatches && categoryItemMatches.length > 0) {
-            let matchNumber = itemInObj.name.replace(categoryRegex, '');
-            if (Number(matchNumber) < Number(number) && item.unlocked) {
-              itemInObj.unlocked = true;
-            } else if (Number(matchNumber) > Number(number) && !item.unlocked) {
-              itemInObj.unlocked = false;
-            }
-          }
-        });
-      }
+    item.unlocked = !item.unlocked;
     this.saveProfiles();
   }
 

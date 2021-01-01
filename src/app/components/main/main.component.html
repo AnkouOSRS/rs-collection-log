@@ -79,6 +79,12 @@
     </div>
   </div>
 
+  <!-- Begin Achievement Diaries section -->
+  <div class="container-fluid text-center">
+    <app-diary-spinner [regions]="selectedProfile.diaries" (click)="saveProfiles()"></app-diary-spinner>
+  </div>
+  <!-- End Achievement Diaries section -->
+
   <div class="container-fluid text-center card-columns" style="margin-bottom: 100px; padding-right: 40px;">
     <span *ngFor="let category of selectedProfile.categories; index as i;">
       <div class="card card-category"
@@ -215,7 +221,8 @@
 
   <div data-html2canvas-ignore class="card bottom-btn-card" style="background-color: #333;">
     <div class="action-btn-div">
-      <button mat-raised-button color="warn" data-toggle="modal" data-target="#resetModal" style="margin-right: 5px">
+      <span *ngIf="taskbarExpanded">
+        <button mat-raised-button color="warn" data-toggle="modal" data-target="#resetModal" style="margin-right: 5px">
         <span class="material-icons">replay</span>
         Reset
       </button>
@@ -236,6 +243,11 @@
       <button mat-raised-button color="accent" style="margin-left: 5px;" data-toggle="modal" data-target="#importModal">
         <span class="material-icons" style="color: #333;">input</span>
         Import profile
+      </button>
+      </span>
+      <button mat-raised-button color="accent" style="margin-left: 5px;" (click)="taskbarExpanded = !taskbarExpanded">
+        <span *ngIf="taskbarExpanded" class="material-icons" style="color: #333;">keyboard_arrow_left</span>
+        <span *ngIf="!taskbarExpanded" class="material-icons" style="color: #333;">keyboard_arrow_right</span>
       </button>
     </div>
   </div>
