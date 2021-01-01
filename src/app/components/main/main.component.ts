@@ -74,10 +74,6 @@ export class MainComponent implements OnInit {
   }
 
   ngOnInit() {
-    if (undefined == this.selectedProfile.diaries || this.selectedProfile.diaries === []) {
-      this.selectedProfile.diaries = DefaultCategories.DEFAULT_DIARIES;
-      this.saveProfiles();
-    }
     this.loadFromLocalStorage();
     if (this.categories && this.categories.length != 0) {
       this.selectedCategoryName = this.categories[0].name;
@@ -98,6 +94,7 @@ export class MainComponent implements OnInit {
 
   loadFromLocalStorage() {
     if (localStorage.getItem('profiles') != null) {
+      console.log(JSON.parse(localStorage.getItem('profiles')));
       this.profiles = JSON.parse(localStorage.getItem('profiles'));
     } else {
       let defaultProfile: Profile;
@@ -122,6 +119,18 @@ export class MainComponent implements OnInit {
         this.selectedProfile = profile;
       }
     });
+    this.profiles.forEach((profile: Profile) => {
+      if (!profile.diaries || profile.diaries === []) {
+        profile.diaries = DefaultCategories.DEFAULT_DIARIES;
+      }
+    });
+    this.saveProfiles();
+    // if (undefined == this.selectedProfile.diaries || this.selectedProfile.diaries === []) {
+    //   this.selectedProfile.diaries = DefaultCategories.DEFAULT_DIARIES;
+    //   this.saveProfiles();
+    // } else {
+    //   console.log(this.selectedProfile.diaries);
+    // }
   }
 
   scrollToTop() {
