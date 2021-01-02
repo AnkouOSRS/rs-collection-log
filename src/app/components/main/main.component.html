@@ -732,6 +732,5 @@
 >
   <p style="font-size: 20px; margin-top: 100px; color: white">Finding the order that makes the best use of space...</p>
   <mat-progress-bar mode="determinate" value="{{getShuffleProgress()}}"></mat-progress-bar>
-  <p style="color: rgba(255,255,255,.5); text-align: center; margin-top: 20px;">(ETA: {{getShuffleEta() | date:'mm:ss'}}
-    )</p>
+  <p style="color: rgba(255,255,255,.5); text-align: center; margin-top: 20px;">( Time remaining: {{getShuffleEta() | date:'mm:ss'}} )</p>
 </ngx-spinner>
