@@ -1,6 +1,5 @@
 <div class="container-fluid main-container" [ngStyle]="styleService.getBgStyle()">
-
-    <app-tutorial-overlay *ngIf="shouldShowTutorial()"></app-tutorial-overlay>
+    <app-tutorial-overlay  *ngIf="shouldShowTutorial()"></app-tutorial-overlay>
   <span *ngIf="!shouldShowTutorial()">
     <div class="qp-div"
          [ngClass]="(selectedProfile.qp == null || selectedProfile.qp == '' || selectedProfile.qp == '0' ? 'ss-hide' : '')"
@@ -97,7 +96,7 @@
   </div>
     <!-- End Achievement Diaries section -->
 
-  <div class="container-fluid text-center card-columns" style="margin-bottom: 100px; padding-right: 40px;">
+  <div class="container-fluid text-center card-columns">
     <span *ngFor="let category of selectedProfile.categories; index as i;">
       <div class="card card-category"
            [ngStyle]="{'background-color': styleService.appliedStyles.cardColor,
@@ -291,6 +290,8 @@
       href="https://www.osrsbox.com/" target="_blank">OSRSBox API</a></span>
   </div>
   </span>
+<!--  Spacer to provide room for bottom toolbars-->
+  <div data-html2canvas-ignore style="padding-top: 80px !important;"></div>
 </div>
 
 <div class="modal fade" id="importModal" tabindex="-1" role="dialog">

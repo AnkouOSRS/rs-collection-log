@@ -305,6 +305,7 @@ export class MainComponent implements OnInit {
 
   captureScreenshot() {
     this.toggleScreenshotHiddenElements(true);
+    window.scroll(0,0);
     html2canvas(document.body, {
       allowTaint: true,
       useCORS: true,
