@@ -1,5 +1,5 @@
 import { BrowserModule } from '@angular/platform-browser';
-import {NgModule} from '@angular/core';
+import {NgModule, CUSTOM_ELEMENTS_SCHEMA} from '@angular/core';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
@@ -23,6 +23,8 @@ import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import {DEFAULT_FONT_PICKER_CONFIG} from "./config";
 import { DiaryEntryComponent } from './components/diary-entry/diary-entry.component';
 import { DiaryProgressBarComponent } from './components/diary-entry/diary-progress-bar/diary-progress-bar.component';
+import { TutorialOverlayComponent } from './tutorial-overlay/tutorial-overlay.component';
+import { NgxSpinnerModule } from "ngx-spinner";
 
 @NgModule({
   declarations: [
@@ -30,6 +32,7 @@ import { DiaryProgressBarComponent } from './components/diary-entry/diary-progre
     MainComponent,
     DiaryEntryComponent,
     DiaryProgressBarComponent,
+    TutorialOverlayComponent,
   ],
   imports: [
     BrowserModule,
@@ -52,7 +55,9 @@ import { DiaryProgressBarComponent } from './components/diary-entry/diary-progre
     MatSnackBarModule,
     MatProgressSpinnerModule,
     NgbModule,
+    NgxSpinnerModule
   ],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
   providers: [
     {
       provide: FONT_PICKER_CONFIG,

@@ -1,4 +1,4 @@
-import {Component, ElementRef, Inject, OnInit, Renderer2} from '@angular/core';
+import {Component, ElementRef, OnInit, Renderer2} from '@angular/core';
 import {HttpClient} from "@angular/common/http";
 import {Item} from "../../models/item";
 import {Category} from "../../models/category";
@@ -9,6 +9,8 @@ import {SearchErrorStateMatcher} from "../../matchers/search-error-state-matcher
 import {FormControl, Validators} from "@angular/forms";
 import {MatSnackBar} from "@angular/material";
 import {Profile} from "../../models/profile";
+import {NgxSpinnerService} from "ngx-spinner";
+import ResizeObserver from 'resize-observer-polyfill';
 
 @Component({
   selector: 'app-main',
@@ -52,6 +54,10 @@ export class MainComponent implements OnInit {
 
   taskbarExpanded = true;
 
+  shuffleProgress = 0;
+  shuffleIterations = 250;
+  iterationTime = -1;
+
   searchErrorStateMatcher = new SearchErrorStateMatcher();
   searchFormControl = new FormControl('', [
     Validators.required
@@ -65,9 +71,14 @@ export class MainComponent implements OnInit {
   addNewProfileFormControl = new FormControl('', [
     Validators.required
   ]);
+  iterationsFormControl = new FormControl('', [
+    Validators.required,
+    Validators.min(1),
+    Validators.max(10000)
+  ]);
 
   constructor(private http: HttpClient, private elementRef: ElementRef, private renderer: Renderer2,
-              public styleService: StyleService, private _snackbar: MatSnackBar) {
+              public styleService: StyleService, private _snackbar: MatSnackBar, private spinner: NgxSpinnerService) {
     this.profiles = [DefaultCategories.DEFAULT_PROFILE];
     this.selectedProfile = this.profiles[0];
     this.selectedProfileName = this.selectedProfile.name;
@@ -125,12 +136,6 @@ export class MainComponent implements OnInit {
       }
     });
     this.saveProfiles();
-    // if (undefined == this.selectedProfile.diaries || this.selectedProfile.diaries === []) {
-    //   this.selectedProfile.diaries = DefaultCategories.DEFAULT_DIARIES;
-    //   this.saveProfiles();
-    // } else {
-    //   console.log(this.selectedProfile.diaries);
-    // }
   }
 
   scrollToTop() {
@@ -147,8 +152,8 @@ export class MainComponent implements OnInit {
   }
 
   saveQp() {
-    if (Number(this.selectedProfile.qp) > 275)
-      this.selectedProfile.qp = '275';
+    // if (Number(this.selectedProfile.qp) > 275)
+    //   this.selectedProfile.qp = '275';
     if (Number(this.selectedProfile.qp) < 0)
       this.selectedProfile.qp = '0';
     this.saveProfiles();
@@ -169,6 +174,103 @@ export class MainComponent implements OnInit {
     }
   }
 
+  async smartShuffleCategories() {
+    this.spinner.show();
+    const categoriesBeforeShuffle = JSON.parse(JSON.stringify(this.selectedProfile.categories));
+    const container = document.querySelector('.card-columns');
+    const startHeight = container.scrollHeight;
+    console.log('startHeight: ' + startHeight);
+
+    let shuffles = 0;
+    let minHeight = startHeight;
+    let minCategories: Category[] = this.selectedProfile.categories;
+    let shuffledCategories;
+
+    const observer = new ResizeObserver(function() {
+      const currentCategories = JSON.parse(JSON.stringify(shuffledCategories));
+      const newHeight = container.scrollHeight;
+      if (newHeight < minHeight) {
+        minCategories = currentCategories;
+        minHeight = newHeight;
+        console.log('new height: ' + newHeight);
+      }
+    });
+
+    observer.observe(container);
+
+    const startTime = Date.now();
+    while (shuffles < this.shuffleIterations) {
+      shuffledCategories = JSON.parse(JSON.stringify(this.shuffle(this.selectedProfile.categories)));
+      await this.delay(10);
+      this.shuffleProgress = shuffles;
+      shuffles++;
+      if (this.iterationTime === -1 || shuffles % Math.floor(this.shuffleIterations / 5) === 0) {
+        this.iterationTime = (Date.now() - startTime) / (shuffles);
+      }
+    }
+    if (startHeight === minHeight) {
+      this.selectedProfile.categories = categoriesBeforeShuffle;
+    } else if (undefined != minCategories && minCategories != []) {
+      this.selectedProfile.categories = JSON.parse(JSON.stringify(minCategories));
+    } else {
+      console.error(minCategories);
+    }
+    console.log('end height: ' + minHeight);
+    const percentImproved = (((startHeight - minHeight) / startHeight) * 100.0).toFixed(0);
+    this.saveProfiles();
+    const revertSnackbarRef = this._snackbar.open('Smart shuffle reduced the page height by '
+      + percentImproved + '%', 'Revert', {duration: 10000, verticalPosition: 'top'});
+    revertSnackbarRef.onAction().subscribe(() => {
+      this.selectedProfile.categories = categoriesBeforeShuffle;
+      this.saveProfiles();
+    });
+    this.spinner.hide();
+  }
+
+  getShuffleProgress() {
+    return (this.shuffleProgress / this.shuffleIterations) * 100
+  }
+
+  getShuffleEta() {
+    return (this.iterationTime * (this.shuffleIterations - this.shuffleProgress));
+  }
+
+  delay(ms: number) {
+    return new Promise( resolve => setTimeout(resolve, ms) );
+  }
+
+  shuffle(array) {
+    let currentIndex = array.length, temporaryValue, randomIndex;
+
+    // While there remain elements to shuffle...
+    while (0 !== currentIndex) {
+
+      // Pick a remaining element...
+      randomIndex = Math.floor(Math.random() * currentIndex);
+      currentIndex -= 1;
+
+      // And swap it with the current element.
+      temporaryValue = array[currentIndex];
+      array[currentIndex] = array[randomIndex];
+      array[randomIndex] = temporaryValue;
+    }
+    return array;
+  }
+
+  shouldShowTutorial() {
+    return localStorage.getItem('showTutorial') != 'false';
+  }
+
+  swapCategories(category, index) {
+    const oldIndex = this.selectedProfile.categories.indexOf(category);
+    const temp = this.deepCopy(this.selectedProfile.categories[index]);
+    this.selectedProfile.categories[index] = category;
+    this.selectedProfile.categories[oldIndex] = temp;
+  }
+
+  deepCopy(serializable) {
+    return JSON.parse(JSON.stringify(serializable));
+  }
   getProfileJSON(): string {
     return JSON.stringify(this.selectedProfile);
   }

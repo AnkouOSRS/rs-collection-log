@@ -1165,11 +1165,11 @@ export class DefaultCategories {
       "progress": 0
     },
     {
-      "name": "Kourend & Kebos",
+      "name": "Kourend",
       "progress": 0
     },
     {
-      "name": "Lumbridge & Draynor",
+      "name": "Lumbridge",
       "progress": 0
     },
     {

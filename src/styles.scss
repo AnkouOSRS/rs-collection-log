@@ -335,9 +335,15 @@ mat-progress-bar {
 .edit-category-btn {
   color: #999;
   position: absolute;
-  top: 10px;
-  left: 10px;
+  top: 0;
+  left: 3px;
   //z-index: 100;
+}
+
+.close-category {
+  position: absolute;
+  top: -5px;
+  right: -3px;
 }
 
 .category-lock-wrapper {
