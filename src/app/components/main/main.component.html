@@ -1,11 +1,11 @@
 <div class="container-fluid main-container" [ngStyle]="styleService.getBgStyle()">
 
-  <!--  <app-tutorial-overlay *ngIf="shouldShowTutorial()"></app-tutorial-overlay>-->
-
-  <div class="qp-div"
-       [ngClass]="(selectedProfile.qp == null || selectedProfile.qp == '' || selectedProfile.qp == '0' ? 'ss-hide' : '')"
-       *ngIf="styleService.appliedStyles.showQp"
-       [ngStyle]="{top: (65 - (styleService.appliedStyles.qpIconSize - 50)) + 'px'}">
+    <app-tutorial-overlay *ngIf="shouldShowTutorial()"></app-tutorial-overlay>
+  <span *ngIf="!shouldShowTutorial()">
+    <div class="qp-div"
+         [ngClass]="(selectedProfile.qp == null || selectedProfile.qp == '' || selectedProfile.qp == '0' ? 'ss-hide' : '')"
+         *ngIf="styleService.appliedStyles.showQp"
+         [ngStyle]="{top: (65 - (styleService.appliedStyles.qpIconSize - 50)) + 'px'}">
     <img [src]="'assets/qp.png'" [ngStyle]="{width: styleService.appliedStyles.qpIconSize + 'px'}">
     <mat-form-field appearance="none">
       <mat-label>Quest Points</mat-label>
@@ -91,11 +91,11 @@
     </div>
   </div>
 
-  <!-- Begin Achievement Diaries section -->
+    <!-- Begin Achievement Diaries section -->
   <div class="container-fluid text-center">
     <app-diary-spinner [regions]="selectedProfile.diaries" (click)="saveProfiles()"></app-diary-spinner>
   </div>
-  <!-- End Achievement Diaries section -->
+    <!-- End Achievement Diaries section -->
 
   <div class="container-fluid text-center card-columns" style="margin-bottom: 100px; padding-right: 40px;">
     <span *ngFor="let category of selectedProfile.categories; index as i;">
@@ -135,7 +135,7 @@
         <div class="row" style="margin: 0">
           <div class="col-xs-6 col-xl-6" style="padding: 0;">
             <mat-form-field class="w-100">
-              <mat-label>Index</mat-label>
+              <mat-label>Position</mat-label>
               <input matInput [value]="i" type="number" class="dimension-control"
                      (change)="swapCategories(category, $event.target.value)"
                      min="0" [max]="selectedProfile.categories.length">
@@ -290,6 +290,7 @@
     <span style="float: right; margin-right: 20px;">Developed using Angular, Bootstrap, and the <a
       href="https://www.osrsbox.com/" target="_blank">OSRSBox API</a></span>
   </div>
+  </span>
 </div>
 
 <div class="modal fade" id="importModal" tabindex="-1" role="dialog">

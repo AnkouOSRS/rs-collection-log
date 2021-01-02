@@ -258,7 +258,8 @@ export class MainComponent implements OnInit {
   }
 
   shouldShowTutorial() {
-    return localStorage.getItem('showTutorial') != 'false';
+    return false;
+    // return localStorage.getItem('showTutorial') != 'false';
   }
 
   swapCategories(category, index) {
