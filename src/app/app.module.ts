@@ -25,6 +25,7 @@ import { DiaryEntryComponent } from './components/diary-entry/diary-entry.compon
 import { DiaryProgressBarComponent } from './components/diary-entry/diary-progress-bar/diary-progress-bar.component';
 import { TutorialOverlayComponent } from './tutorial-overlay/tutorial-overlay.component';
 import { NgxSpinnerModule } from "ngx-spinner";
+import { CategoryComponent } from './category/category.component';
 
 @NgModule({
   declarations: [
@@ -33,6 +34,7 @@ import { NgxSpinnerModule } from "ngx-spinner";
     DiaryEntryComponent,
     DiaryProgressBarComponent,
     TutorialOverlayComponent,
+    CategoryComponent,
   ],
   imports: [
     BrowserModule,

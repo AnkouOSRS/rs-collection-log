@@ -1,0 +1,123 @@
+<div class="card card-category"
+     [ngStyle]="{'background-color': styleService.appliedStyles.cardColor,
+           'border': (styleService.appliedStyles.cardBorderWidth + 'px solid ' + styleService.appliedStyles.cardBorderColor), 'margin': styleService.appliedStyles.cardMargin + 'px'}">
+  <div class="card-header text-center category-header"
+       [ngStyle]="{'background-color': styleService.appliedStyles.cardHeaderColor,
+         'border-bottom': (styleService.appliedStyles.cardBorderWidth + 'px solid ' + styleService.appliedStyles.cardBorderColor)}">
+    <div class="edit-category-btn-wrapper">
+        <span data-html2canvas-ignore class="edit-btn material-icons edit-category-btn"
+              (click)="toggleEditingCategory(category);"
+              [attr.aria-expanded]="editingCategories.includes(category)"
+              [attr.aria-controls]="category.name.replace(' ','') + index + 'Collapse'"
+              [ngStyle]="{color: (this.editingCategories.includes(category) ? 'white' : '')}">
+          edit
+        </span>
+    </div>
+
+    <input class="category-title-input" [value]="category.name" [(ngModel)]="profile.categories[i].name"
+           [ngStyle]="getCategoryTitleWidth(category.name)">
+    <!--      <br />-->
+    <span *ngIf="styleService.appliedStyles.showCategoryKc && category.kc && category.kc > 0">{{category.kc}}
+      kc </span>
+    <span *ngIf="styleService.appliedStyles.showProgress"
+          [ngStyle]="{color: styleService.appliedStyles.progressColor, 'font-weight': 500}">{{getCategoryProgress(category)}}</span>
+
+    <button data-html2canvas-ignore type="button" class="close" aria-label="Close"
+            data-toggle="modal" data-target="#deleteCategoryModal" (click)="categoryBeingRemoved = category">
+      <span aria-hidden="true" class="close-category">&times;</span>
+    </button>
+
+    <div data-html2canvas-ignore class="collapse" style="margin-top: 5px;"
+         [id]="category.name.replace(' ','') + index + 'Collapse'" [ngbCollapse]="!editingCategories.includes(category)">
+      <div class="card card-body edit-card">
+        <div class="container-fluid" style="padding: 0; overflow: hidden">
+          <div class="row" style="margin: 0">
+            <div class="col-xs-6 col-xl-6" style="padding: 0;">
+              <mat-form-field class="w-100">
+                <mat-label>Position</mat-label>
+                <input matInput [value]="index" type="number" class="dimension-control"
+                       (change)="swapCategories(category, $event.target.value)"
+                       min="0" [max]="profile.categories.length">
+              </mat-form-field>
+            </div>
+            <div class="col-xs-6 col-xl-6" style="padding: 0;">
+              <mat-form-field class="w-100">
+                <mat-label>KC</mat-label>
+                <input matInput type="number" class="dimension-control"
+                       [(ngModel)]="category.kc" (ngModelChange)="saveProfiles()" min="0" max="999999">
+              </mat-form-field>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col" style="padding: 0; margin-bottom: 5px;">
+              <button mat-raised-button color="primary" (click)="moveCategoryUp(index)">
+                <span class="material-icons">keyboard_arrow_up</span>
+              </button>
+            </div>
+            <div class="col">
+              <button mat-raised-button color="accent" (click)="editingCategory = category; editingItems = category.items"
+                      data-toggle="modal" data-target="#itemInfoModal" style="margin-bottom: 5px">
+                KC/Qty
+              </button>
+            </div>
+            <div class="col" style="padding: 0;">
+              <button mat-raised-button color="primary" (click)="moveCategoryDown(i)">
+                <span class="material-icons">keyboard_arrow_down</span>
+              </button>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col">
+              <button mat-raised-button color="accent"
+                      (click)="category.items.push({id: null, name: '', unlocked: false}); saveProfiles();">
+                Add Invisible Filler
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <mat-progress-bar mode="determinate" [color]="styleService.appliedStyles.progressBarColor"
+                      value="{{getCategoryProgressPercent(category)}}"
+                      *ngIf="styleService.appliedStyles.showProgressBar"></mat-progress-bar>
+  </div>
+  <div class="container card-body text-center">
+      <span class="item-span" *ngFor="let item of category.items; index as index;">
+        <img class="diary-item" *ngIf="item.id != null"
+             [ngStyle]="{width: styleService.appliedStyles.iconSize + 'px', opacity: (item.unlocked ? 1 : (styleService.appliedStyles.lockedOpacity / 100))}"
+             [src]="'https://www.osrsbox.com/osrsbox-db/items-icons/' + item.id + '.png'"
+             [title]="item.name + (item.kc ? '\nKC(s): ' + item.kc : '')"
+             (click)="toggleItemUnlocked(item, category)" [ngClass]="!item.unlocked ? 'item-locked' : ''">
+
+        <img [src]="'assets/filler.png'" *ngIf="item.id == null" [ngStyle]="getFillerIconStyles()">
+
+                <span class="item-kc" [ngStyle]="getItemKcStyles()"
+                      *ngIf="item.kc && styleService.appliedStyles.showKc">
+                  {{item.kc.substr(0, (item.kc.includes(',') ? item.kc.indexOf(',') : item.kc.length))}} kc
+                </span>
+        <span class="item-qty" [ngStyle]="getItemQtyStyles()"
+              *ngIf="item.quantity && styleService.appliedStyles.showQty">
+          x{{item.quantity}}
+        </span>
+
+        <span data-html2canvas-ignore *ngIf="editingCategories.includes(category)" class="edit-item-span">
+          <span class="material-icons swap-items-icon" title="Swap position"
+                [ngStyle]="{color: (index == swappingIndex && category == swappingCategory ? 'red' : 'rgba(256,256,256,.75')}"
+                (click)="swapItem(index, category)">
+            swap_horiz
+          </span>
+          <span *ngIf="!category.locked" class="material-icons"
+                [ngStyle]="{left: (styleService.appliedStyles.iconSize / 2) +'px', color: 'rgba(255,0,0,.8)'}"
+                title="Remove" data-toggle="modal" data-target="#deleteItemModal"
+                (click)="deletingItem = item; categoryOfDeletingItem = category;">
+            clear
+          </span>
+        </span>
+      </span>
+    <div data-html2canvas-ignore class="category-lock-wrapper" (click)="toggleCategoryLocked(category)">
+        <span class="material-icons category-lock" *ngIf="category.locked"
+              Title="Items can't be removed from this category until you unlock it">lock</span>
+      <span class="material-icons category-lock" *ngIf="!category.locked">lock_open</span>
+    </div>
+  </div>
+</div>
