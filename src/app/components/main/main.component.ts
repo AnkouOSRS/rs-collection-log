@@ -416,18 +416,18 @@ export class MainComponent implements OnInit {
   }
 
   reset() {
-    this.profiles.filter(profile => {
-      if (profile == this.selectedProfile) {
-        profile.categories = DefaultCategories.DEFAULT_PROFILE.categories;
-        profile.ironmanType = DefaultCategories.DEFAULT_PROFILE.ironmanType;
-        profile.name = DefaultCategories.DEFAULT_PROFILE.name;
-        profile.qp = DefaultCategories.DEFAULT_PROFILE.qp;
-      }
-    });
+    this.selectedProfile.categories = DefaultCategories.DEFAULT_PROFILE.categories;
+    this.selectedProfile.ironmanType = DefaultCategories.DEFAULT_PROFILE.ironmanType;
+    this.selectedProfile.name = DefaultCategories.DEFAULT_PROFILE.name;
+    this.selectedProfile.qp = DefaultCategories.DEFAULT_PROFILE.qp;
+    this.selectedProfile.slicedCategories = this.sliceCategories(this.selectedProfile.categories);
     this.saveProfiles();
   }
 
   saveProfiles() {
+    if (undefined === this.selectedProfile.slicedCategories) {
+      this.selectedProfile.slicedCategories = this.sliceCategories(this.selectedProfile.categories);
+    }
     localStorage.setItem('profiles', JSON.stringify(this.profiles));
   }
 
@@ -504,7 +504,6 @@ export class MainComponent implements OnInit {
     if (this.selectedCategoryName === categoryToRemove.name) {
       this.searchFormControl.setErrors({'required': true});
     }
-    // this.selectedProfile.categories = this.selectedProfile.categories.filter(category => category != categoryToRemove);
     this.selectedProfile.slicedCategories.forEach((slice, index) => {
       console.log(slice.filter(cat => cat.name != categoryToRemove.name));
       this.selectedProfile.slicedCategories[index] = slice.filter(cat => cat.name != categoryToRemove.name);
@@ -515,21 +514,29 @@ export class MainComponent implements OnInit {
 
   addCategory() {
     const shortestCategorySlice = this.selectedProfile.slicedCategories.reduce((prev, next) => prev.length > next.length ? next : prev);
-    if (this.addCategorySelectedTab === 0) {
-      shortestCategorySlice.push({name: this.modalCategoryInput, items: [], locked: false});
-      // this.selectedProfile.categories.push({name: this.modalCategoryInput, items: [], locked: false});
-    } else if (this.addCategorySelectedTab === 1) {
-      if (!this.defaultCategorySelectedInModal || this.defaultCategorySelectedInModal === '')
-        return;
-      DefaultCategories.DEFAULT_CATEGORIES.filter(category => {
-        if (category.name === this.defaultCategorySelectedInModal) {
-          // this.selectedProfile.categories.push(category);
-          shortestCategorySlice.push(category);
-        }
-      });
+    let dupe = false;
+    this.selectedProfile.categories.forEach(cat => {
+      if (cat.name === (this.addCategorySelectedTab === 0 ? this.modalCategoryInput : this.defaultCategorySelectedInModal)) {
+        dupe = true;
+      }
+    });
+    if (!dupe) {
+      if (this.addCategorySelectedTab === 0) {
+        shortestCategorySlice.push({name: this.modalCategoryInput, items: [], locked: false});
+      } else if (this.addCategorySelectedTab === 1) {
+        if (!this.defaultCategorySelectedInModal || this.defaultCategorySelectedInModal === '')
+          return;
+        DefaultCategories.DEFAULT_CATEGORIES.filter(category => {
+          if (category.name === this.defaultCategorySelectedInModal) {
+            shortestCategorySlice.push(category);
+          }
+        });
+      }
+      window.scroll(0, document.body.scrollHeight);
+      this.selectedProfile.categories = this.unsliceCategories();
+      this.saveProfiles();
+    } else {
+      this._snackbar.open('You already have a category with that name', 'Dismiss', {duration: 5000});
     }
-    window.scroll(0, document.body.scrollHeight);
-    this.selectedProfile.categories = this.unsliceCategories();
-    this.saveProfiles();
   }
 }

@@ -1,7 +1,7 @@
 <div class="card card-category w-100"
      [ngStyle]="{'background-color': styleService.appliedStyles.cardColor,
            'border': (styleService.appliedStyles.cardBorderWidth + 'px solid ' + styleService.appliedStyles.cardBorderColor), 'margin': styleService.appliedStyles.cardMargin + 'px'}">
-  <div class="card-header text-center category-header"
+  <div cdkDragHandle class="card-header text-center category-header"
        [ngStyle]="{'background-color': styleService.appliedStyles.cardHeaderColor,
          'border-bottom': (styleService.appliedStyles.cardBorderWidth + 'px solid ' + styleService.appliedStyles.cardBorderColor)}">
     <div class="edit-category-btn-wrapper">
@@ -16,7 +16,7 @@
 
     <input class="category-title-input" [value]="category.name" [(ngModel)]="category.name"
            [ngStyle]="getCategoryTitleWidth(category.name)">
-    <span>{{index}}</span>
+<!--    <span>{{index}}</span>-->
     <!--      <br />-->
     <span *ngIf="styleService.appliedStyles.showCategoryKc && category.kc && category.kc > 0">{{category.kc}}
       kc </span>
