@@ -497,13 +497,16 @@ export class MainComponent implements OnInit {
   }
 
   removeCategory(categoryToRemove: Category) {
-    if (!categoryToRemove)
+    if (!categoryToRemove) {
+      console.error('No category to remove');
       return;
+    }
     if (this.selectedCategoryName === categoryToRemove.name) {
       this.searchFormControl.setErrors({'required': true});
     }
     // this.selectedProfile.categories = this.selectedProfile.categories.filter(category => category != categoryToRemove);
     this.selectedProfile.slicedCategories.forEach((slice, index) => {
+      console.log(slice.filter(cat => cat.name != categoryToRemove.name));
       this.selectedProfile.slicedCategories[index] = slice.filter(cat => cat.name != categoryToRemove.name);
     });
     this.selectedProfile.categories = this.unsliceCategories();
@@ -511,18 +514,22 @@ export class MainComponent implements OnInit {
   }
 
   addCategory() {
+    const shortestCategorySlice = this.selectedProfile.slicedCategories.reduce((prev, next) => prev.length > next.length ? next : prev);
     if (this.addCategorySelectedTab === 0) {
-      this.selectedProfile.categories.push({name: this.modalCategoryInput, items: [], locked: false});
+      shortestCategorySlice.push({name: this.modalCategoryInput, items: [], locked: false});
+      // this.selectedProfile.categories.push({name: this.modalCategoryInput, items: [], locked: false});
     } else if (this.addCategorySelectedTab === 1) {
       if (!this.defaultCategorySelectedInModal || this.defaultCategorySelectedInModal === '')
         return;
       DefaultCategories.DEFAULT_CATEGORIES.filter(category => {
         if (category.name === this.defaultCategorySelectedInModal) {
-          this.selectedProfile.categories.push(category);
+          // this.selectedProfile.categories.push(category);
+          shortestCategorySlice.push(category);
         }
       });
     }
     window.scroll(0, document.body.scrollHeight);
+    this.selectedProfile.categories = this.unsliceCategories();
     this.saveProfiles();
   }
 }

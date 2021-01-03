@@ -24,7 +24,7 @@
           [ngStyle]="{color: styleService.appliedStyles.progressColor, 'font-weight': 500}">{{getCategoryProgress(category)}}</span>
 
     <button data-html2canvas-ignore type="button" class="close" aria-label="Close"
-            data-toggle="modal" data-target="#deleteCategoryModal" (click)="categoryBeingRemoved = category">
+            data-toggle="modal" data-target="#deleteCategoryModal" (click)="removeEmitter.emit(category)">
       <span aria-hidden="true" class="close-category">&times;</span>
     </button>
 

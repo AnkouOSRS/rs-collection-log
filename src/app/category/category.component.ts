@@ -20,6 +20,7 @@ export class CategoryComponent implements OnInit {
   @Input() searchFormControl;
 
   @Output() saveEmitter: EventEmitter<any> = new EventEmitter();
+  @Output() removeEmitter: EventEmitter<Category> = new EventEmitter();
 
   swappingIndex: number;
   swappingCategory: Category;

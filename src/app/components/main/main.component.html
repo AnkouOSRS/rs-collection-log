@@ -104,7 +104,7 @@
         <div class="example-box" *ngFor="let category of slice; index as i;">
           <app-category [category]="category" [index]="getIndexOfCategory(category)" [profile]="selectedProfile" [categoryBeingRemoved]="categoryBeingRemoved"
                         [editingCategory]="editingCategory" [editingItems]="editingItems" (saveEmitter)="saveProfiles()"
-                        *ngIf="category" cdkDrag>
+                        (removeEmitter)="categoryBeingRemoved = $event" *ngIf="category" cdkDrag>
           </app-category>
         </div>
       </div>
