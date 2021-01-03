@@ -3,6 +3,7 @@ import {StyleService} from "../services/style/style.service";
 import {Category} from "../models/category";
 import {Item} from "../models/item";
 import {Profile} from "../models/profile";
+import {FormControl, Validators} from "@angular/forms";
 
 @Component({
   selector: 'app-category',
@@ -16,6 +17,7 @@ export class CategoryComponent implements OnInit {
   @Input() categoryBeingRemoved: Category;
   @Input() editingCategory: Category;
   @Input() editingItems: Item[];
+  @Input() searchFormControl;
 
   @Output() saveEmitter: EventEmitter<any> = new EventEmitter();
 
@@ -24,6 +26,7 @@ export class CategoryComponent implements OnInit {
   editingCategories: Category[] = [];
   deletingItem: Item;
   categoryOfDeletingItem: Category;
+  selectedCategoryName: string;
 
   constructor(private styleService: StyleService) { }
 

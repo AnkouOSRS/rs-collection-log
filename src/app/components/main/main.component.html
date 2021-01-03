@@ -97,13 +97,21 @@
     <!-- End Achievement Diaries section -->
 
     <!-- Begin category cards -->
-  <div class="container-fluid text-center card-columns">
-    <span class="category-card" *ngFor="let category of selectedProfile.categories; index as i;">
-      <app-category [category]="category" [index]="i" [profile]="selectedProfile" [categoryBeingRemoved]="categoryBeingRemoved"
-      [editingCategory]="editingCategory" [editingItems]="editingItems" (saveEmitter)="saveProfiles()">
-      </app-category>
-  </span>
-  </div>
+    <div cdkDropListGroup class="container-fluid w-100">
+      <div class="row w-100">
+
+        <div cdkDropList class="example-list col" (cdkDropListDropped)="drop($event)" *ngFor="let slice of selectedProfile.slicedCategories">
+        <div class="example-box" *ngFor="let category of slice; index as i;">
+          <app-category [category]="category" [index]="getIndexOfCategory(category)" [profile]="selectedProfile" [categoryBeingRemoved]="categoryBeingRemoved"
+                        [editingCategory]="editingCategory" [editingItems]="editingItems" (saveEmitter)="saveProfiles()"
+                        *ngIf="category" cdkDrag>
+          </app-category>
+        </div>
+      </div>
+
+      </div>
+    </div>
+
     <!-- End category cards -->
 
   <div data-html2canvas-ignore class="collapse" id="addCollapse" style="z-index: 99999 !important"

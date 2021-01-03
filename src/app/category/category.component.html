@@ -1,4 +1,4 @@
-<div class="card card-category"
+<div class="card card-category w-100"
      [ngStyle]="{'background-color': styleService.appliedStyles.cardColor,
            'border': (styleService.appliedStyles.cardBorderWidth + 'px solid ' + styleService.appliedStyles.cardBorderColor), 'margin': styleService.appliedStyles.cardMargin + 'px'}">
   <div class="card-header text-center category-header"
@@ -14,8 +14,9 @@
         </span>
     </div>
 
-    <input class="category-title-input" [value]="category.name" [(ngModel)]="profile.categories[index].name"
+    <input class="category-title-input" [value]="category.name" [(ngModel)]="category.name"
            [ngStyle]="getCategoryTitleWidth(category.name)">
+    <span>{{index}}</span>
     <!--      <br />-->
     <span *ngIf="styleService.appliedStyles.showCategoryKc && category.kc && category.kc > 0">{{category.kc}}
       kc </span>

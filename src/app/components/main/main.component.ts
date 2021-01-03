@@ -11,6 +11,7 @@ import {MatSnackBar} from "@angular/material";
 import {Profile} from "../../models/profile";
 import {NgxSpinnerService} from "ngx-spinner";
 import ResizeObserver from 'resize-observer-polyfill';
+import {CdkDragDrop, moveItemInArray, transferArrayItem} from "@angular/cdk/drag-drop";
 
 @Component({
   selector: 'app-main',
@@ -54,6 +55,10 @@ export class MainComponent implements OnInit {
   shuffleProgress = 0;
   shuffleIterations = 250;
   iterationTime = -1;
+
+  slicedCategories = [];
+
+  numColumns = 5;
 
   searchErrorStateMatcher = new SearchErrorStateMatcher();
   searchFormControl = new FormControl('', [
@@ -100,9 +105,19 @@ export class MainComponent implements OnInit {
     });
   }
 
+  getIndexOfCategory(category: Category): number {
+    let result = -1;
+    this.selectedProfile.categories.forEach((c, index) => {
+      if (c.name === category.name) {
+        result = index;
+      }
+    });
+    return result;
+  }
+
   loadFromLocalStorage() {
+    // localStorage.removeItem('profiles');
     if (localStorage.getItem('profiles') != null) {
-      console.log(JSON.parse(localStorage.getItem('profiles')));
       this.profiles = JSON.parse(localStorage.getItem('profiles'));
     } else {
       let defaultProfile: Profile;
@@ -115,6 +130,15 @@ export class MainComponent implements OnInit {
       };
       this.profiles = [defaultProfile];
     }
+    this.profiles.forEach((profile: Profile) => {
+      if (!profile.diaries || profile.diaries === []) {
+        profile.diaries = DefaultCategories.DEFAULT_DIARIES;
+      }
+      if (undefined === profile.slicedCategories || profile.slicedCategories === []) {
+        console.error('profile had no sliced categories');
+        profile.slicedCategories = this.sliceCategories(profile.categories);
+      }
+    });
     if (localStorage.getItem('selectedProfile') != null) {
       let selectedIndex = Number(localStorage.getItem('selectedProfile'));
       if (this.profiles.length >= selectedIndex && this.profiles[selectedIndex] != null) {
@@ -125,11 +149,6 @@ export class MainComponent implements OnInit {
     this.profiles.filter(profile => {
       if (profile.name === this.selectedProfileName) {
         this.selectedProfile = profile;
-      }
-    });
-    this.profiles.forEach((profile: Profile) => {
-      if (!profile.diaries || profile.diaries === []) {
-        profile.diaries = DefaultCategories.DEFAULT_DIARIES;
       }
     });
     this.saveProfiles();
@@ -244,6 +263,50 @@ export class MainComponent implements OnInit {
     return array;
   }
 
+  drop(event: CdkDragDrop<string[]>) {
+    if (event.previousContainer === event.container) {
+      const listNum = Number((event.container.id).charAt(event.container.id.length - 1)) % this.numColumns;
+      moveItemInArray(this.selectedProfile.slicedCategories[listNum], event.previousIndex, event.currentIndex);
+    } else {
+      const oldListNum = Number((event.previousContainer.id).charAt(event.previousContainer.id.length - 1)) % this.numColumns;
+      const oldList = this.selectedProfile.slicedCategories[oldListNum];
+
+      const newListNum = Number((event.container.id).charAt(event.container.id.length - 1)) % this.numColumns;
+      const newList = this.selectedProfile.slicedCategories[newListNum];
+
+      transferArrayItem(oldList, newList, event.previousIndex, event.currentIndex);
+    }
+    this.selectedProfile.categories = this.unsliceCategories();
+    this.saveProfiles();
+  }
+
+  sliceCategories(categories: Category[]): Category[][] {
+    const result: Category[][] = [];
+    const cat: Category[] = (categories);
+    const height = Math.ceil(cat.length / this.numColumns);
+
+    for (let col = 0; col < this.numColumns; col++) {
+      result[col] = [];
+      for (let row = 0; row < height; row++) {
+        if (undefined != cat[row + (this.numColumns - 1) * col]) {
+          result[col].push(cat[row + (this.numColumns - 1) * col]);
+        }
+      }
+    }
+    return result;
+  }
+
+  unsliceCategories(): Category[] {
+    const result: Category[] = [];
+    const sliced = this.selectedProfile.slicedCategories;
+    for (let i = 0; i < sliced.length; i++) {
+      for (let j = 0; j < sliced[i].length; j++) {
+        result.push(sliced[i][j]);
+      }
+    }
+    return result;
+  }
+
   shouldShowTutorial() {
     return false;
     // return localStorage.getItem('showTutorial') != 'false';
@@ -252,6 +315,7 @@ export class MainComponent implements OnInit {
   deepCopy(serializable) {
     return JSON.parse(JSON.stringify(serializable));
   }
+
   getProfileJSON(): string {
     return JSON.stringify(this.selectedProfile);
   }
@@ -335,7 +399,6 @@ export class MainComponent implements OnInit {
     category.items = category.items.filter(item => item != itemToRemove);
     this.saveProfiles();
   }
-
 
   bgUploaded(event) {
     this.styleService.pendingStyles.backgroundImageUrl = URL.createObjectURL(event.target.files[0]);
@@ -439,7 +502,11 @@ export class MainComponent implements OnInit {
     if (this.selectedCategoryName === categoryToRemove.name) {
       this.searchFormControl.setErrors({'required': true});
     }
-    this.selectedProfile.categories = this.selectedProfile.categories.filter(category => category != categoryToRemove);
+    // this.selectedProfile.categories = this.selectedProfile.categories.filter(category => category != categoryToRemove);
+    this.selectedProfile.slicedCategories.forEach((slice, index) => {
+      this.selectedProfile.slicedCategories[index] = slice.filter(cat => cat.name != categoryToRemove.name);
+    });
+    this.selectedProfile.categories = this.unsliceCategories();
     this.saveProfiles();
   }
 
