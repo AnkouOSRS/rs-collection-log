@@ -1,5 +1,5 @@
 <div class="container-fluid main-container" [ngStyle]="styleService.getBgStyle()">
-    <app-tutorial-overlay  *ngIf="shouldShowTutorial()"></app-tutorial-overlay>
+  <app-tutorial-overlay *ngIf="shouldShowTutorial()"></app-tutorial-overlay>
   <span *ngIf="!shouldShowTutorial()">
     <div class="qp-div"
          [ngClass]="(selectedProfile.qp == null || selectedProfile.qp == '' || selectedProfile.qp == '0' ? 'ss-hide' : '')"
@@ -96,8 +96,9 @@
   </div>
     <!-- End Achievement Diaries section -->
 
+
   <div class="container-fluid text-center card-columns">
-    <span *ngFor="let category of selectedProfile.categories; index as i;">
+    <span class="category-card" *ngFor="let category of selectedProfile.categories; index as i;">
       <div class="card card-category"
            [ngStyle]="{'background-color': styleService.appliedStyles.cardColor,
            'border': (styleService.appliedStyles.cardBorderWidth + 'px solid ' + styleService.appliedStyles.cardBorderColor), 'margin': styleService.appliedStyles.cardMargin + 'px'}">
@@ -290,7 +291,7 @@
       href="https://www.osrsbox.com/" target="_blank">OSRSBox API</a></span>
   </div>
   </span>
-<!--  Spacer to provide room for bottom toolbars-->
+  <!--  Spacer to provide room for bottom toolbars-->
   <div data-html2canvas-ignore style="padding-top: 80px !important;"></div>
 </div>
 
@@ -702,13 +703,15 @@
         <p>You can run smart reshuffle multiple times and get a different order until you are happy, or you can swap
           categories using the arrows or index in the edit category menu.</p>
         <p>Decreasing the number iterations may lead to worse use of space, but will allow for faster shuffles.</p>
+        <p>To completely randomize the order without regards to gaps, <strong>use -1 for the number of
+          shuffles.</strong></p>
         <mat-form-field>
           <mat-label># of shuffles</mat-label>
           <input matInput id="iterations" [formControl]="iterationsFormControl" style="color: white;"
                  [errorStateMatcher]="searchErrorStateMatcher" [(ngModel)]="shuffleIterations">
           <mat-error *ngIf="iterationsFormControl.hasError('required')">Iterations required!</mat-error>
           <mat-error *ngIf="iterationsFormControl.hasError('min') || iterationsFormControl.hasError('max')">
-            Iterations must be between 0 - 10,000!
+            Iterations must be between 0 - 10,000, or -1 to do a normal shuffle!
           </mat-error>
         </mat-form-field>
       </div>
@@ -733,5 +736,6 @@
 >
   <p style="font-size: 20px; margin-top: 100px; color: white">Finding the order that makes the best use of space...</p>
   <mat-progress-bar mode="determinate" value="{{getShuffleProgress()}}"></mat-progress-bar>
-  <p style="color: rgba(255,255,255,.5); text-align: center; margin-top: 20px;">( Time remaining: {{getShuffleEta() | date:'mm:ss'}} )</p>
+  <p style="color: rgba(255,255,255,.5); text-align: center; margin-top: 20px;">( Time
+    remaining: {{getShuffleEta() | date:'mm:ss'}} )</p>
 </ngx-spinner>

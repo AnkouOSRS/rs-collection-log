@@ -11,6 +11,7 @@ import {MatSnackBar} from "@angular/material";
 import {Profile} from "../../models/profile";
 import {NgxSpinnerService} from "ngx-spinner";
 import ResizeObserver from 'resize-observer-polyfill';
+import {CdkDragDrop, moveItemInArray} from "@angular/cdk/drag-drop";
 
 @Component({
   selector: 'app-main',
@@ -73,7 +74,7 @@ export class MainComponent implements OnInit {
   ]);
   iterationsFormControl = new FormControl('', [
     Validators.required,
-    Validators.min(1),
+    Validators.min(-1),
     Validators.max(10000)
   ]);
 
@@ -175,6 +176,11 @@ export class MainComponent implements OnInit {
   }
 
   async smartShuffleCategories() {
+    if (this.shuffleIterations == -1) {
+      this.shuffle(this.selectedProfile.categories);
+      this.saveProfiles();
+      return;
+    }
     this.spinner.show();
     const categoriesBeforeShuffle = JSON.parse(JSON.stringify(this.selectedProfile.categories));
     const container = document.querySelector('.card-columns');
