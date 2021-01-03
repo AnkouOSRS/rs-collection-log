@@ -4,14 +4,13 @@ import {Item} from "../../models/item";
 import {Category} from "../../models/category";
 import {DefaultCategories} from "../../constants/default-categories";
 import html2canvas from "html2canvas";
-import {StyleService} from "../../services/style.service";
+import {StyleService} from "../../services/style/style.service";
 import {SearchErrorStateMatcher} from "../../matchers/search-error-state-matcher";
 import {FormControl, Validators} from "@angular/forms";
 import {MatSnackBar} from "@angular/material";
 import {Profile} from "../../models/profile";
 import {NgxSpinnerService} from "ngx-spinner";
 import ResizeObserver from 'resize-observer-polyfill';
-import {CdkDragDrop, moveItemInArray} from "@angular/cdk/drag-drop";
 
 @Component({
   selector: 'app-main',

@@ -1,5 +1,5 @@
 import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
-import {StyleService} from "../services/style.service";
+import {StyleService} from "../services/style/style.service";
 import {Category} from "../models/category";
 import {Item} from "../models/item";
 import {Profile} from "../models/profile";
@@ -28,6 +28,7 @@ export class CategoryComponent implements OnInit {
   constructor(private styleService: StyleService) { }
 
   ngOnInit() {
+
   }
 
   toggleEditingCategory(categoryToToggle: Category) {

@@ -96,14 +96,15 @@
   </div>
     <!-- End Achievement Diaries section -->
 
+    <!-- Begin category cards -->
   <div class="container-fluid text-center card-columns">
     <span class="category-card" *ngFor="let category of selectedProfile.categories; index as i;">
       <app-category [category]="category" [index]="i" [profile]="selectedProfile" [categoryBeingRemoved]="categoryBeingRemoved"
       [editingCategory]="editingCategory" [editingItems]="editingItems" (saveEmitter)="saveProfiles()">
-
       </app-category>
   </span>
   </div>
+    <!-- End category cards -->
 
   <div data-html2canvas-ignore class="collapse" id="addCollapse" style="z-index: 99999 !important"
        [ngbCollapse]="isAddCollapsed">

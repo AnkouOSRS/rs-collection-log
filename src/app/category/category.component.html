@@ -14,7 +14,7 @@
         </span>
     </div>
 
-    <input class="category-title-input" [value]="category.name" [(ngModel)]="profile.categories[i].name"
+    <input class="category-title-input" [value]="category.name" [(ngModel)]="profile.categories[index].name"
            [ngStyle]="getCategoryTitleWidth(category.name)">
     <!--      <br />-->
     <span *ngIf="styleService.appliedStyles.showCategoryKc && category.kc && category.kc > 0">{{category.kc}}
