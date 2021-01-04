@@ -564,7 +564,6 @@ export class MainComponent implements OnInit {
       this.searchFormControl.setErrors({'required': true});
     }
     this.selectedProfile.slicedCategories.forEach((slice, index) => {
-      console.log(slice.filter(cat => cat.name != categoryToRemove.name));
       this.selectedProfile.slicedCategories[index] = slice.filter(cat => cat.name != categoryToRemove.name);
     });
     this.selectedProfile.categories = this.unsliceCategories();
