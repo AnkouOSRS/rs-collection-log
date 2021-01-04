@@ -1,4 +1,4 @@
-import {Component, ElementRef, OnInit, Renderer2} from '@angular/core';
+import {Component, ElementRef, HostListener, OnInit, Renderer2} from '@angular/core';
 import {HttpClient} from "@angular/common/http";
 import {Item} from "../../models/item";
 import {Category} from "../../models/category";
@@ -53,7 +53,7 @@ export class MainComponent implements OnInit {
   taskbarExpanded = true;
 
   shuffleProgress = 0;
-  shuffleIterations = 250;
+  shuffleIterations = 50;
   iterationTime = -1;
 
   slicedCategories = [];
@@ -79,6 +79,11 @@ export class MainComponent implements OnInit {
     Validators.max(10000)
   ]);
 
+  @HostListener('window:resize', ['$event'])
+  onResize() {
+    // this.screenWidthChanged();
+  }
+
   constructor(private http: HttpClient, private elementRef: ElementRef, private renderer: Renderer2,
               public styleService: StyleService, private _snackbar: MatSnackBar, private spinner: NgxSpinnerService) {
     this.profiles = [DefaultCategories.DEFAULT_PROFILE];
@@ -103,6 +108,7 @@ export class MainComponent implements OnInit {
       console.error('Error while retrieving item data from OSRS Box API');
       console.error(error);
     });
+    // this.screenWidthChanged();
   }
 
   getIndexOfCategory(category: Category): number {
@@ -177,28 +183,28 @@ export class MainComponent implements OnInit {
 
   async smartShuffleCategories() {
     if (this.shuffleIterations == -1) {
-      this.shuffle(this.selectedProfile.categories);
+      this.selectedProfile.slicedCategories = this.deepCopy(this.shuffle2d(this.selectedProfile.slicedCategories));
+      this.selectedProfile.categories = this.unsliceCategories();
       this.saveProfiles();
       return;
     }
     this.spinner.show();
-    const categoriesBeforeShuffle = JSON.parse(JSON.stringify(this.selectedProfile.categories));
-    const container = document.querySelector('.card-columns');
+    const container = document.querySelector('.card-container');
     const startHeight = container.scrollHeight;
     console.log('startHeight: ' + startHeight);
 
     let shuffles = 0;
     let minHeight = startHeight;
-    let minCategories: Category[] = this.selectedProfile.categories;
-    let shuffledCategories;
+    let minSlices = this.deepCopy(this.selectedProfile.slicedCategories);
+    let shuffledSlices;
+    let slicesBeforeShuffle = this.deepCopy(this.selectedProfile.slicedCategories);
 
     const observer = new ResizeObserver(function() {
-      const currentCategories = JSON.parse(JSON.stringify(shuffledCategories));
       const newHeight = container.scrollHeight;
       if (newHeight < minHeight) {
-        minCategories = currentCategories;
         minHeight = newHeight;
         console.log('new height: ' + newHeight);
+        minSlices = shuffledSlices;
       }
     });
 
@@ -206,7 +212,8 @@ export class MainComponent implements OnInit {
 
     const startTime = Date.now();
     while (shuffles < this.shuffleIterations) {
-      shuffledCategories = JSON.parse(JSON.stringify(this.shuffle(this.selectedProfile.categories)));
+      this.selectedProfile.slicedCategories = this.shuffle2d(this.selectedProfile.slicedCategories);
+      shuffledSlices = this.deepCopy(this.selectedProfile.slicedCategories);
       await this.delay(10);
       this.shuffleProgress = shuffles;
       shuffles++;
@@ -215,19 +222,21 @@ export class MainComponent implements OnInit {
       }
     }
     if (startHeight === minHeight) {
-      this.selectedProfile.categories = categoriesBeforeShuffle;
-    } else if (undefined != minCategories && minCategories != []) {
-      this.selectedProfile.categories = JSON.parse(JSON.stringify(minCategories));
+      this.selectedProfile.slicedCategories = this.deepCopy(slicesBeforeShuffle);
+    } else if (undefined != minSlices && minSlices != []) {
+      this.selectedProfile.slicedCategories = this.deepCopy(minSlices);
     } else {
-      console.error(minCategories);
+      console.error(minSlices);
     }
+    this.selectedProfile.categories = this.unsliceCategories();
     console.log('end height: ' + minHeight);
     const percentImproved = (((startHeight - minHeight) / startHeight) * 100.0).toFixed(0);
     this.saveProfiles();
     const revertSnackbarRef = this._snackbar.open('Smart shuffle reduced the page height by '
       + percentImproved + '%', 'Revert', {duration: 10000, verticalPosition: 'top'});
     revertSnackbarRef.onAction().subscribe(() => {
-      this.selectedProfile.categories = categoriesBeforeShuffle;
+      this.selectedProfile.slicedCategories = slicesBeforeShuffle;
+      this.selectedProfile.categories = this.unsliceCategories();
       this.saveProfiles();
     });
     this.spinner.hide();
@@ -261,6 +270,20 @@ export class MainComponent implements OnInit {
       array[randomIndex] = temporaryValue;
     }
     return array;
+  }
+
+  shuffle2d(array) {
+    const oneDimArr = array.reduce((a, b) => [...a, ...b], []);
+    const shuffledArr = this.shuffle(oneDimArr);
+    let shuffledTwoDirArr: any[][] = [];
+    for (let i = 0; i < array.length; i++) {
+      shuffledTwoDirArr[i] = [];
+    }
+    shuffledArr.forEach(element => {
+      const index = Math.floor((Math.random() % 1) * (shuffledTwoDirArr.length));
+      shuffledTwoDirArr[index].push(element);
+    });
+    return shuffledTwoDirArr;
   }
 
   drop(event: CdkDragDrop<string[]>) {
@@ -305,6 +328,42 @@ export class MainComponent implements OnInit {
       }
     }
     return result;
+  }
+
+  screenWidthChanged() {
+    const width = window.innerWidth;
+    if (width > 1100) {
+      if (this.numColumns != 5) {
+        this.numColumns = 5;
+        this.selectedProfile.slicedCategories = this.deepCopy(this.sliceCategories(this.selectedProfile.categories));
+        this.selectedProfile.categories = this.deepCopy(this.unsliceCategories());
+      }
+    } else if (width > 900) {
+      if (this.numColumns != 4) {
+        this.numColumns = 4;
+        this.selectedProfile.slicedCategories = this.deepCopy(this.sliceCategories(this.selectedProfile.categories));
+        this.selectedProfile.categories = this.deepCopy(this.unsliceCategories());
+      }
+    } else if (width > 700) {
+      if (this.numColumns != 3) {
+        this.numColumns = 3;
+        this.selectedProfile.slicedCategories = this.deepCopy(this.sliceCategories(this.selectedProfile.categories));
+        this.selectedProfile.categories = this.deepCopy(this.unsliceCategories());
+      }
+    } else if (width > 515) {
+      if (this.numColumns != 2) {
+        this.numColumns = 2;
+        this.selectedProfile.slicedCategories = this.deepCopy(this.sliceCategories(this.selectedProfile.categories));
+        this.selectedProfile.categories = this.deepCopy(this.unsliceCategories());
+      }
+    } else {
+      if (this.numColumns != 1) {
+        this.numColumns = 1;
+        this.selectedProfile.slicedCategories = this.deepCopy(this.sliceCategories(this.selectedProfile.categories));
+        this.selectedProfile.categories = this.deepCopy(this.unsliceCategories());
+      }
+    }
+    this.saveProfiles();
   }
 
   shouldShowTutorial() {

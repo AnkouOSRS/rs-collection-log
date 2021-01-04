@@ -3,7 +3,8 @@
     <div *ngFor="let region of regions; index as i">
       <div class="col-xs-1 col-xl-1">
         <app-diary-progress-bar [region]="region" [ngStyle]="{color: colors[i]}" [progress]="(regions[i].progress ? regions[i].progress : 0)"></app-diary-progress-bar>
-        <h4 class="title">{{region.name}}</h4>
+<!--        <h4 class="title">{{region.name}}</h4>-->
+        <input class="title diary-name-input" [(ngModel)]="region.name" [ngStyle]="getDiaryInputWidth(region.name)">
       </div>
     </div>
   </div>

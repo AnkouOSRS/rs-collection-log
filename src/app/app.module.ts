@@ -21,17 +21,17 @@ import 'hammerjs';
 import {ClipboardModule} from "ngx-clipboard";
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import {DEFAULT_FONT_PICKER_CONFIG} from "./config";
-import { DiaryEntryComponent } from './components/diary-entry/diary-entry.component';
-import { DiaryProgressBarComponent } from './components/diary-entry/diary-progress-bar/diary-progress-bar.component';
+import { DiaryEntriesComponent } from './components/diary-entries/diary-entries.component';
+import { DiaryProgressBarComponent } from './components/diary-entries/diary-progress-bar/diary-progress-bar.component';
 import { TutorialOverlayComponent } from './tutorial-overlay/tutorial-overlay.component';
 import { NgxSpinnerModule } from "ngx-spinner";
-import { CategoryComponent } from './category/category.component';
+import { CategoryComponent } from './components/category/category.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     MainComponent,
-    DiaryEntryComponent,
+    DiaryEntriesComponent,
     DiaryProgressBarComponent,
     TutorialOverlayComponent,
     CategoryComponent,

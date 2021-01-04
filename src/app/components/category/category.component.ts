@@ -1,8 +1,8 @@
 import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
-import {StyleService} from "../services/style/style.service";
-import {Category} from "../models/category";
-import {Item} from "../models/item";
-import {Profile} from "../models/profile";
+import {StyleService} from "../../services/style/style.service";
+import {Category} from "../../models/category";
+import {Item} from "../../models/item";
+import {Profile} from "../../models/profile";
 import {FormControl, Validators} from "@angular/forms";
 
 @Component({
