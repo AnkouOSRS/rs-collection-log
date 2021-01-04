@@ -7,4 +7,5 @@ export class Profile {
   ironmanType: number = 0;
   qp: string = '0';
   diaries: DiaryRegion[];
+  slicedCategories?: Category[][];
 }

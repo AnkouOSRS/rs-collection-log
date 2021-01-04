@@ -1,17 +1,17 @@
-import {Component, ElementRef, OnInit, Renderer2} from '@angular/core';
+import {Component, ElementRef, HostListener, OnInit, Renderer2} from '@angular/core';
 import {HttpClient} from "@angular/common/http";
 import {Item} from "../../models/item";
 import {Category} from "../../models/category";
 import {DefaultCategories} from "../../constants/default-categories";
 import html2canvas from "html2canvas";
-import {StyleService} from "../../services/style.service";
+import {StyleService} from "../../services/style/style.service";
 import {SearchErrorStateMatcher} from "../../matchers/search-error-state-matcher";
 import {FormControl, Validators} from "@angular/forms";
 import {MatSnackBar} from "@angular/material";
 import {Profile} from "../../models/profile";
 import {NgxSpinnerService} from "ngx-spinner";
 import ResizeObserver from 'resize-observer-polyfill';
-import {CdkDragDrop, moveItemInArray} from "@angular/cdk/drag-drop";
+import {CdkDragDrop, moveItemInArray, transferArrayItem} from "@angular/cdk/drag-drop";
 
 @Component({
   selector: 'app-main',
@@ -39,7 +39,6 @@ export class MainComponent implements OnInit {
   modalCategoryInput: string = '';
   editingCategory: Category;
   editingItems: Item[];
-  editingCategories: Category[] = [];
   defaultCategories: Category[] = DefaultCategories.DEFAULT_CATEGORIES;
   defaultCategorySelectedInModal = '';
   addCategorySelectedTab = 0; // 0 - new, 1 - default
@@ -48,16 +47,18 @@ export class MainComponent implements OnInit {
   isAddCollapsed = true;
   isItemSearchCollapsed = true;
 
-  swappingIndex: number;
-  swappingCategory: Category;
   deletingItem: Item;
   categoryOfDeletingItem: Category;
 
   taskbarExpanded = true;
 
   shuffleProgress = 0;
-  shuffleIterations = 250;
+  shuffleIterations = 50;
   iterationTime = -1;
+
+  slicedCategories = [];
+
+  numColumns = 5;
 
   searchErrorStateMatcher = new SearchErrorStateMatcher();
   searchFormControl = new FormControl('', [
@@ -77,6 +78,11 @@ export class MainComponent implements OnInit {
     Validators.min(-1),
     Validators.max(10000)
   ]);
+
+  @HostListener('window:resize', ['$event'])
+  onResize() {
+    // this.screenWidthChanged();
+  }
 
   constructor(private http: HttpClient, private elementRef: ElementRef, private renderer: Renderer2,
               public styleService: StyleService, private _snackbar: MatSnackBar, private spinner: NgxSpinnerService) {
@@ -102,11 +108,22 @@ export class MainComponent implements OnInit {
       console.error('Error while retrieving item data from OSRS Box API');
       console.error(error);
     });
+    // this.screenWidthChanged();
+  }
+
+  getIndexOfCategory(category: Category): number {
+    let result = -1;
+    this.selectedProfile.categories.forEach((c, index) => {
+      if (c.name === category.name) {
+        result = index;
+      }
+    });
+    return result;
   }
 
   loadFromLocalStorage() {
+    // localStorage.removeItem('profiles');
     if (localStorage.getItem('profiles') != null) {
-      console.log(JSON.parse(localStorage.getItem('profiles')));
       this.profiles = JSON.parse(localStorage.getItem('profiles'));
     } else {
       let defaultProfile: Profile;
@@ -119,6 +136,15 @@ export class MainComponent implements OnInit {
       };
       this.profiles = [defaultProfile];
     }
+    this.profiles.forEach((profile: Profile) => {
+      if (!profile.diaries || profile.diaries === []) {
+        profile.diaries = DefaultCategories.DEFAULT_DIARIES;
+      }
+      if (undefined === profile.slicedCategories || profile.slicedCategories === []) {
+        console.error('profile had no sliced categories');
+        profile.slicedCategories = this.sliceCategories(profile.categories);
+      }
+    });
     if (localStorage.getItem('selectedProfile') != null) {
       let selectedIndex = Number(localStorage.getItem('selectedProfile'));
       if (this.profiles.length >= selectedIndex && this.profiles[selectedIndex] != null) {
@@ -129,11 +155,6 @@ export class MainComponent implements OnInit {
     this.profiles.filter(profile => {
       if (profile.name === this.selectedProfileName) {
         this.selectedProfile = profile;
-      }
-    });
-    this.profiles.forEach((profile: Profile) => {
-      if (!profile.diaries || profile.diaries === []) {
-        profile.diaries = DefaultCategories.DEFAULT_DIARIES;
       }
     });
     this.saveProfiles();
@@ -160,45 +181,30 @@ export class MainComponent implements OnInit {
     this.saveProfiles();
   }
 
-  toggleCategoryLocked(category: Category) {
-    category.locked = !category.locked;
-  }
-
-  swapItem(index: number, category: Category) {
-    if (this.swappingIndex != null && this.swappingCategory && this.swappingCategory == category) {
-      this.swapInArray(category.items, index, this.swappingIndex);
-      this.swappingIndex = null;
-      this.swappingCategory = null;
-    } else {
-      this.swappingIndex = index;
-      this.swappingCategory = category;
-    }
-  }
-
   async smartShuffleCategories() {
     if (this.shuffleIterations == -1) {
-      this.shuffle(this.selectedProfile.categories);
+      this.selectedProfile.slicedCategories = this.deepCopy(this.shuffle2d(this.selectedProfile.slicedCategories));
+      this.selectedProfile.categories = this.unsliceCategories();
       this.saveProfiles();
       return;
     }
     this.spinner.show();
-    const categoriesBeforeShuffle = JSON.parse(JSON.stringify(this.selectedProfile.categories));
-    const container = document.querySelector('.card-columns');
+    const container = document.querySelector('.card-container');
     const startHeight = container.scrollHeight;
     console.log('startHeight: ' + startHeight);
 
     let shuffles = 0;
     let minHeight = startHeight;
-    let minCategories: Category[] = this.selectedProfile.categories;
-    let shuffledCategories;
+    let minSlices = this.deepCopy(this.selectedProfile.slicedCategories);
+    let shuffledSlices;
+    let slicesBeforeShuffle = this.deepCopy(this.selectedProfile.slicedCategories);
 
     const observer = new ResizeObserver(function() {
-      const currentCategories = JSON.parse(JSON.stringify(shuffledCategories));
       const newHeight = container.scrollHeight;
       if (newHeight < minHeight) {
-        minCategories = currentCategories;
         minHeight = newHeight;
         console.log('new height: ' + newHeight);
+        minSlices = shuffledSlices;
       }
     });
 
@@ -206,7 +212,8 @@ export class MainComponent implements OnInit {
 
     const startTime = Date.now();
     while (shuffles < this.shuffleIterations) {
-      shuffledCategories = JSON.parse(JSON.stringify(this.shuffle(this.selectedProfile.categories)));
+      this.selectedProfile.slicedCategories = this.shuffle2d(this.selectedProfile.slicedCategories);
+      shuffledSlices = this.deepCopy(this.selectedProfile.slicedCategories);
       await this.delay(10);
       this.shuffleProgress = shuffles;
       shuffles++;
@@ -215,19 +222,21 @@ export class MainComponent implements OnInit {
       }
     }
     if (startHeight === minHeight) {
-      this.selectedProfile.categories = categoriesBeforeShuffle;
-    } else if (undefined != minCategories && minCategories != []) {
-      this.selectedProfile.categories = JSON.parse(JSON.stringify(minCategories));
+      this.selectedProfile.slicedCategories = this.deepCopy(slicesBeforeShuffle);
+    } else if (undefined != minSlices && minSlices != []) {
+      this.selectedProfile.slicedCategories = this.deepCopy(minSlices);
     } else {
-      console.error(minCategories);
+      console.error(minSlices);
     }
+    this.selectedProfile.categories = this.unsliceCategories();
     console.log('end height: ' + minHeight);
     const percentImproved = (((startHeight - minHeight) / startHeight) * 100.0).toFixed(0);
     this.saveProfiles();
     const revertSnackbarRef = this._snackbar.open('Smart shuffle reduced the page height by '
       + percentImproved + '%', 'Revert', {duration: 10000, verticalPosition: 'top'});
     revertSnackbarRef.onAction().subscribe(() => {
-      this.selectedProfile.categories = categoriesBeforeShuffle;
+      this.selectedProfile.slicedCategories = slicesBeforeShuffle;
+      this.selectedProfile.categories = this.unsliceCategories();
       this.saveProfiles();
     });
     this.spinner.hide();
@@ -263,21 +272,109 @@ export class MainComponent implements OnInit {
     return array;
   }
 
+  shuffle2d(array) {
+    const oneDimArr = array.reduce((a, b) => [...a, ...b], []);
+    const shuffledArr = this.shuffle(oneDimArr);
+    let shuffledTwoDirArr: any[][] = [];
+    for (let i = 0; i < array.length; i++) {
+      shuffledTwoDirArr[i] = [];
+    }
+    shuffledArr.forEach(element => {
+      const index = Math.floor((Math.random() % 1) * (shuffledTwoDirArr.length));
+      shuffledTwoDirArr[index].push(element);
+    });
+    return shuffledTwoDirArr;
+  }
+
+  drop(event: CdkDragDrop<string[]>) {
+    if (event.previousContainer === event.container) {
+      const listNum = Number((event.container.id).charAt(event.container.id.length - 1)) % this.numColumns;
+      moveItemInArray(this.selectedProfile.slicedCategories[listNum], event.previousIndex, event.currentIndex);
+    } else {
+      const oldListNum = Number((event.previousContainer.id).charAt(event.previousContainer.id.length - 1)) % this.numColumns;
+      const oldList = this.selectedProfile.slicedCategories[oldListNum];
+
+      const newListNum = Number((event.container.id).charAt(event.container.id.length - 1)) % this.numColumns;
+      const newList = this.selectedProfile.slicedCategories[newListNum];
+
+      transferArrayItem(oldList, newList, event.previousIndex, event.currentIndex);
+    }
+    this.selectedProfile.categories = this.unsliceCategories();
+    this.saveProfiles();
+  }
+
+  sliceCategories(categories: Category[]): Category[][] {
+    const result: Category[][] = [];
+    const cat: Category[] = (categories);
+    const height = Math.ceil(cat.length / this.numColumns);
+
+    for (let col = 0; col < this.numColumns; col++) {
+      result[col] = [];
+      for (let row = 0; row < height; row++) {
+        if (undefined != cat[row + (this.numColumns - 1) * col]) {
+          result[col].push(cat[row + (this.numColumns - 1) * col]);
+        }
+      }
+    }
+    return result;
+  }
+
+  unsliceCategories(): Category[] {
+    const result: Category[] = [];
+    const sliced = this.selectedProfile.slicedCategories;
+    for (let i = 0; i < sliced.length; i++) {
+      for (let j = 0; j < sliced[i].length; j++) {
+        result.push(sliced[i][j]);
+      }
+    }
+    return result;
+  }
+
+  screenWidthChanged() {
+    const width = window.innerWidth;
+    if (width > 1100) {
+      if (this.numColumns != 5) {
+        this.numColumns = 5;
+        this.selectedProfile.slicedCategories = this.deepCopy(this.sliceCategories(this.selectedProfile.categories));
+        this.selectedProfile.categories = this.deepCopy(this.unsliceCategories());
+      }
+    } else if (width > 900) {
+      if (this.numColumns != 4) {
+        this.numColumns = 4;
+        this.selectedProfile.slicedCategories = this.deepCopy(this.sliceCategories(this.selectedProfile.categories));
+        this.selectedProfile.categories = this.deepCopy(this.unsliceCategories());
+      }
+    } else if (width > 700) {
+      if (this.numColumns != 3) {
+        this.numColumns = 3;
+        this.selectedProfile.slicedCategories = this.deepCopy(this.sliceCategories(this.selectedProfile.categories));
+        this.selectedProfile.categories = this.deepCopy(this.unsliceCategories());
+      }
+    } else if (width > 515) {
+      if (this.numColumns != 2) {
+        this.numColumns = 2;
+        this.selectedProfile.slicedCategories = this.deepCopy(this.sliceCategories(this.selectedProfile.categories));
+        this.selectedProfile.categories = this.deepCopy(this.unsliceCategories());
+      }
+    } else {
+      if (this.numColumns != 1) {
+        this.numColumns = 1;
+        this.selectedProfile.slicedCategories = this.deepCopy(this.sliceCategories(this.selectedProfile.categories));
+        this.selectedProfile.categories = this.deepCopy(this.unsliceCategories());
+      }
+    }
+    this.saveProfiles();
+  }
+
   shouldShowTutorial() {
     return false;
     // return localStorage.getItem('showTutorial') != 'false';
   }
 
-  swapCategories(category, index) {
-    const oldIndex = this.selectedProfile.categories.indexOf(category);
-    const temp = this.deepCopy(this.selectedProfile.categories[index]);
-    this.selectedProfile.categories[index] = category;
-    this.selectedProfile.categories[oldIndex] = temp;
-  }
-
   deepCopy(serializable) {
     return JSON.parse(JSON.stringify(serializable));
   }
+
   getProfileJSON(): string {
     return JSON.stringify(this.selectedProfile);
   }
@@ -357,45 +454,9 @@ export class MainComponent implements OnInit {
     }
   }
 
-  moveCategoryUp(index: number) {
-    if (index === 0)
-      return;
-    let currentCategory = this.selectedProfile.categories[index];
-    if (this.selectedProfile.categories[index - 1]) {
-      let temp = this.selectedProfile.categories[index - 1];
-      this.selectedProfile.categories[index - 1] = currentCategory;
-      this.selectedProfile.categories[index] = temp;
-    }
-  }
-
-  moveCategoryDown(index: number) {
-    if (index === this.selectedProfile.categories.length - 1)
-      return;
-    let currentCategory = this.selectedProfile.categories[index];
-    if (this.selectedProfile.categories[index + 1]) {
-      let temp = this.selectedProfile.categories[index + 1];
-      this.selectedProfile.categories[index + 1] = currentCategory;
-      this.selectedProfile.categories[index] = temp;
-    }
-  }
-
   removeItem(category: Category, itemToRemove: Item) {
     category.items = category.items.filter(item => item != itemToRemove);
     this.saveProfiles();
-  }
-
-  toggleEditingCategory(categoryToToggle: Category) {
-    if (this.editingCategories.includes(categoryToToggle)) {
-      this.editingCategories = this.editingCategories.filter(category => category != categoryToToggle);
-    } else {
-      this.editingCategories.push(categoryToToggle);
-    }
-  }
-
-  getCategoryTitleWidth(name) {
-    if (!name)
-      return {width: '1ch', color: this.styleService.appliedStyles.headerColor};
-    return {width: (name.length + 2) + "ch", color: this.styleService.appliedStyles.headerColor};
   }
 
   bgUploaded(event) {
@@ -413,57 +474,19 @@ export class MainComponent implements OnInit {
     return result;
   }
 
-  getItemQtyStyles() {
-    return {
-      'position': 'absolute',
-      'top': 0,
-      'left': (this.styleService.appliedStyles.iconSize) + 'px',
-      'z-index': 88888
-    };
-  }
-
-  getItemKcStyles() {
-    return {
-      'position': 'absolute',
-      'top': (this.styleService.appliedStyles.iconSize / 50 * 20) + 'px',
-      'left': 0,
-      'z-index': 88888
-    };
-  }
-
-  getCategoryProgress(category: Category) {
-    let total = category.items.length;
-    let unlocked = 0;
-    category.items.forEach(item => {
-      if (item.unlocked)
-        unlocked++;
-    });
-    return '(' + unlocked + '/' + total + ')';
-  }
-
-  getCategoryProgressPercent(category: Category) {
-    let total = category.items.length;
-    let unlocked = 0;
-    category.items.forEach(item => {
-      if (item.unlocked)
-        unlocked++;
-    });
-    return (unlocked / total) * 100;
-  }
-
   reset() {
-    this.profiles.filter(profile => {
-      if (profile == this.selectedProfile) {
-        profile.categories = DefaultCategories.DEFAULT_PROFILE.categories;
-        profile.ironmanType = DefaultCategories.DEFAULT_PROFILE.ironmanType;
-        profile.name = DefaultCategories.DEFAULT_PROFILE.name;
-        profile.qp = DefaultCategories.DEFAULT_PROFILE.qp;
-      }
-    });
+    this.selectedProfile.categories = DefaultCategories.DEFAULT_PROFILE.categories;
+    this.selectedProfile.ironmanType = DefaultCategories.DEFAULT_PROFILE.ironmanType;
+    this.selectedProfile.name = DefaultCategories.DEFAULT_PROFILE.name;
+    this.selectedProfile.qp = DefaultCategories.DEFAULT_PROFILE.qp;
+    this.selectedProfile.slicedCategories = this.sliceCategories(this.selectedProfile.categories);
     this.saveProfiles();
   }
 
   saveProfiles() {
+    if (undefined === this.selectedProfile.slicedCategories) {
+      this.selectedProfile.slicedCategories = this.sliceCategories(this.selectedProfile.categories);
+    }
     localStorage.setItem('profiles', JSON.stringify(this.profiles));
   }
 
@@ -532,50 +555,47 @@ export class MainComponent implements OnInit {
     this.saveProfiles();
   }
 
-  getFillerIconStyles() {
-    console.log(this.styleService.appliedStyles.iconSize);
-    let iconWidth = this.styleService.appliedStyles.iconSize;
-    return {
-      'width.px': iconWidth,
-      'height.px': ((iconWidth / 50) * 44.44),
-      margin: '5px'
-    }
-  }
-
-  toggleItemUnlocked(item: Item, category: Category) {
-    item.unlocked = !item.unlocked;
-    this.saveProfiles();
-  }
-
   removeCategory(categoryToRemove: Category) {
-    if (!categoryToRemove)
+    if (!categoryToRemove) {
+      console.error('No category to remove');
       return;
+    }
     if (this.selectedCategoryName === categoryToRemove.name) {
       this.searchFormControl.setErrors({'required': true});
     }
-    this.selectedProfile.categories = this.selectedProfile.categories.filter(category => category != categoryToRemove);
+    this.selectedProfile.slicedCategories.forEach((slice, index) => {
+      console.log(slice.filter(cat => cat.name != categoryToRemove.name));
+      this.selectedProfile.slicedCategories[index] = slice.filter(cat => cat.name != categoryToRemove.name);
+    });
+    this.selectedProfile.categories = this.unsliceCategories();
     this.saveProfiles();
   }
 
   addCategory() {
-    if (this.addCategorySelectedTab === 0) {
-      this.selectedProfile.categories.push({name: this.modalCategoryInput, items: [], locked: false});
-    } else if (this.addCategorySelectedTab === 1) {
-      if (!this.defaultCategorySelectedInModal || this.defaultCategorySelectedInModal === '')
-        return;
-      DefaultCategories.DEFAULT_CATEGORIES.filter(category => {
-        if (category.name === this.defaultCategorySelectedInModal) {
-          this.selectedProfile.categories.push(category);
-        }
-      });
+    const shortestCategorySlice = this.selectedProfile.slicedCategories.reduce((prev, next) => prev.length > next.length ? next : prev);
+    let dupe = false;
+    this.selectedProfile.categories.forEach(cat => {
+      if (cat.name === (this.addCategorySelectedTab === 0 ? this.modalCategoryInput : this.defaultCategorySelectedInModal)) {
+        dupe = true;
+      }
+    });
+    if (!dupe) {
+      if (this.addCategorySelectedTab === 0) {
+        shortestCategorySlice.push({name: this.modalCategoryInput, items: [], locked: false});
+      } else if (this.addCategorySelectedTab === 1) {
+        if (!this.defaultCategorySelectedInModal || this.defaultCategorySelectedInModal === '')
+          return;
+        DefaultCategories.DEFAULT_CATEGORIES.filter(category => {
+          if (category.name === this.defaultCategorySelectedInModal) {
+            shortestCategorySlice.push(category);
+          }
+        });
+      }
+      window.scroll(0, document.body.scrollHeight);
+      this.selectedProfile.categories = this.unsliceCategories();
+      this.saveProfiles();
+    } else {
+      this._snackbar.open('You already have a category with that name', 'Dismiss', {duration: 5000});
     }
-    window.scroll(0, document.body.scrollHeight);
-    this.saveProfiles();
-  }
-
-  swapInArray(array: any[], index1: number, index2: number) {
-    let temp = array[index1];
-    array[index1] = array[index2];
-    array[index2] = temp;
   }
 }

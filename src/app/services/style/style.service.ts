@@ -1,7 +1,7 @@
 import {Injectable, Renderer2, RendererFactory2} from '@angular/core';
-import {DefaultStyles} from "../constants/default-styles";
+import {DefaultStyles} from "../../constants/default-styles";
 import {Font} from "ngx-font-picker";
-import {Styles} from "../models/styles";
+import {Styles} from "../../models/styles";
 
 @Injectable({
   providedIn: 'root'
