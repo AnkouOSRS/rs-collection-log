@@ -27,9 +27,9 @@ export class CategoryComponent implements OnInit {
   editingCategories: Category[] = [];
   deletingItem: Item;
   categoryOfDeletingItem: Category;
-  selectedCategoryName: string;
+  // selectedCategoryName: string;
 
-  constructor(private styleService: StyleService) { }
+  constructor(public styleService: StyleService) { }
 
   ngOnInit() {
 

@@ -79,10 +79,10 @@ export class MainComponent implements OnInit {
     Validators.max(10000)
   ]);
 
-  @HostListener('window:resize', ['$event'])
-  onResize() {
-    // this.screenWidthChanged();
-  }
+  // @HostListener('window:resize', ['$event'])
+  // onResize() {
+  //   // this.screenWidthChanged();
+  // }
 
   constructor(private http: HttpClient, private elementRef: ElementRef, private renderer: Renderer2,
               public styleService: StyleService, private _snackbar: MatSnackBar, private spinner: NgxSpinnerService) {
@@ -564,7 +564,6 @@ export class MainComponent implements OnInit {
       this.searchFormControl.setErrors({'required': true});
     }
     this.selectedProfile.slicedCategories.forEach((slice, index) => {
-      console.log(slice.filter(cat => cat.name != categoryToRemove.name));
       this.selectedProfile.slicedCategories[index] = slice.filter(cat => cat.name != categoryToRemove.name);
     });
     this.selectedProfile.categories = this.unsliceCategories();
