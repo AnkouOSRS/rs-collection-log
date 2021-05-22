@@ -79,10 +79,10 @@ export class MainComponent implements OnInit {
     Validators.max(10000)
   ]);
 
-  @HostListener('window:resize', ['$event'])
-  onResize() {
-    // this.screenWidthChanged();
-  }
+  // @HostListener('window:resize', ['$event'])
+  // onResize() {
+  //   // this.screenWidthChanged();
+  // }
 
   constructor(private http: HttpClient, private elementRef: ElementRef, private renderer: Renderer2,
               public styleService: StyleService, private _snackbar: MatSnackBar, private spinner: NgxSpinnerService) {
