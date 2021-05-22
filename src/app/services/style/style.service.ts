@@ -41,7 +41,6 @@ export class StyleService {
 
   resetStyles() {
     this.pendingStyles = DefaultStyles.DEFAULT_STYLES;
-    // let bgUpload = this.elementRef.nativeElement.querySelectorAll('#bg-upload');
     let bgUpload = document.querySelectorAll('#bg-upload');
     if (bgUpload[0] != null) {
       bgUpload[0]['value'] = '';
