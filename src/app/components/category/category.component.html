@@ -110,7 +110,7 @@
           <span *ngIf="!category.locked" class="material-icons"
                 [ngStyle]="{left: (styleService.appliedStyles.iconSize / 2) +'px', color: 'rgba(255,0,0,.8)'}"
                 title="Remove" data-toggle="modal" data-target="#deleteItemModal"
-                (click)="deletingItem = item; categoryOfDeletingItem = category;">
+                (click)="itemToDelete.emit({'category': category, 'item': item});">
             clear
           </span>
         </span>

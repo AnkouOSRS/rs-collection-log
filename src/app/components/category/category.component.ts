@@ -25,9 +25,7 @@ export class CategoryComponent implements OnInit {
   swappingIndex: number;
   swappingCategory: Category;
   editingCategories: Category[] = [];
-  deletingItem: Item;
-  categoryOfDeletingItem: Category;
-  // selectedCategoryName: string;
+  @Output() itemToDelete: EventEmitter<any> = new EventEmitter();
 
   constructor(public styleService: StyleService) { }
 

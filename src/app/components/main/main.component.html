@@ -102,9 +102,11 @@
 
         <div cdkDropList class="col" style="padding: 5px" (cdkDropListDropped)="drop($event)" *ngFor="let slice of selectedProfile.slicedCategories">
         <div class="drag-container" *ngFor="let category of slice; index as i;">
-          <app-category [category]="category" [index]="getIndexOfCategory(category)" [profile]="selectedProfile" [categoryBeingRemoved]="categoryBeingRemoved"
-                        [editingCategory]="editingCategory" [editingItems]="editingItems" (saveEmitter)="saveProfiles()"
-                        (removeEmitter)="categoryBeingRemoved = $event" *ngIf="category" cdkDrag>
+          <app-category *ngIf="category" [category]="category" [index]="getIndexOfCategory(category)" [profile]="selectedProfile"
+                        [categoryBeingRemoved]="categoryBeingRemoved" [editingCategory]="editingCategory"
+                        [editingItems]="editingItems" (saveEmitter)="saveProfiles()"
+                        (removeEmitter)="categoryBeingRemoved = $event"
+                        (itemToDelete)="categoryOfDeletingItem = $event['category']; deletingItem = $event['item'];" cdkDrag>
           </app-category>
         </div>
       </div>
